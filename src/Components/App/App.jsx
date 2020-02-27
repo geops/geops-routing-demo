@@ -36,6 +36,7 @@ function App(props) {
         setApiKey(data.key);
       })
       .catch(() => {
+        // eslint-disable-next-line no-console
         console.error('Request to get the apiKey failed');
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
