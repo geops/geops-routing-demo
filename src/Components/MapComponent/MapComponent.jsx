@@ -16,6 +16,10 @@ import {
   pointStyleFunction,
 } from '../../config/styleConfig';
 import { to4326 } from '../../utils';
+import {
+  propTypeCurrentStops,
+  propTypeCurrentStopsGeoJSON,
+} from '../../store/prop-types';
 import './MapComponent.css';
 import * as actions from '../../store/actions';
 
@@ -372,8 +376,8 @@ MapComponent.propTypes = {
   onShowNotification: PropTypes.func.isRequired,
   onSetCurrentStops: PropTypes.func.isRequired,
   onSetCurrentStopsGeoJSON: PropTypes.func.isRequired,
-  currentStops: PropTypes.array.isRequired,
-  currentStopsGeoJSON: PropTypes.object.isRequired,
+  currentStops: propTypeCurrentStops.isRequired,
+  currentStopsGeoJSON: propTypeCurrentStopsGeoJSON.isRequired,
   isFieldFocused: PropTypes.bool.isRequired,
   APIKey: PropTypes.string.isRequired,
   routingUrl: PropTypes.string.isRequired,
