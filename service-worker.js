@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/geops-routing-demo/precache-manifest.e187d17e2990509d42447c93227e8d57.js"
+  "/geops-routing-demo/precache-manifest.0cc14d1f956be8756fafdc543593db6e.js"
 );
 
 self.addEventListener('message', (event) => {
