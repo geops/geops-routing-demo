@@ -153,7 +153,7 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
         dispatch(setCurrentMot(newMot));
       }
 
-       if (urlSearch.tracks) {
+      if (urlSearch.tracks) {
         dispatch(setTracks(urlSearch.tracks.split(',')));
       }
 
