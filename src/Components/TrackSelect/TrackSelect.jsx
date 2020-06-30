@@ -15,7 +15,7 @@ const propTypes = {
 const useStyles = makeStyles(() => ({
   wrapper: {
     width: '20%',
-    padding: '0 20px 4px 20px',
+    padding: '0 20px 4px 10px',
   },
 }));
 
