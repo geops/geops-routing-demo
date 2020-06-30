@@ -12,6 +12,7 @@ import {
   setCenter,
   setRoutingElevation,
   setResolveHops,
+  setTracks,
 } from '../../store/actions/Map';
 
 const abortController = new AbortController();
@@ -64,10 +65,16 @@ const getGeoJson = (viaString, APIKey, stationSearchUrl) => {
 
   /* When the via is a UID */
   if (/^![a-zA-Z0-9]{16}$/.test(viaString)) {
-    reqUrl = `${stationSearchUrl}lookup/${viaString.replace('!', '')}/?key=${APIKey}`;
+    reqUrl = `${stationSearchUrl}lookup/${viaString.replace(
+      '!',
+      '',
+    )}/?key=${APIKey}`;
   } else {
     /* search for the station. Remove ! in case it's an IBNR */
-    reqUrl = `${stationSearchUrl}?q=${viaString.replace('!', '')}&key=${APIKey}`;
+    reqUrl = `${stationSearchUrl}?q=${viaString.replace(
+      '!',
+      '',
+    )}&key=${APIKey}`;
   }
 
   return fetch(reqUrl, { signal })
@@ -107,6 +114,7 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
   const dispatch = useDispatch();
   const urlSearch = qs.parse(window.location.search);
   const center = useSelector(state => state.MapReducer.center);
+  const tracks = useSelector(state => state.MapReducer.tracks);
   const appState = useSelector(state => state.MapReducer);
   const currentMot = useSelector(state => state.MapReducer.currentMot);
   const currentStops = useSelector(state => state.MapReducer.currentStops);
@@ -143,6 +151,10 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
         const newMot = mots.find(mot => mot === urlSearch.mot) || mots[0];
         newParams.mot = newMot;
         dispatch(setCurrentMot(newMot));
+      }
+
+       if (urlSearch.tracks) {
+        dispatch(setTracks(urlSearch.tracks.split(',')));
       }
 
       if (urlSearch.via) {
@@ -197,6 +209,15 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
     newParams.mot = currentMot;
     newParams.elevation = parseInt(routingElevation, 10);
     newParams['resolve-hops'] = resolveHops;
+    newParams.tracks = tracks
+      .map(f => {
+        if (f) {
+          return f.replace('$', '');
+        }
+        return '';
+      })
+      .join(',');
+
     if (Object.keys(currentStopsGeoJSON).length !== 0) {
       newParams.via = compileViaString(currentStopsGeoJSON);
     }
@@ -209,6 +230,7 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
     routingElevation,
     resolveHops,
     map,
+    tracks,
   ]);
 
   return <RSPermalink map={map} params={params} />;

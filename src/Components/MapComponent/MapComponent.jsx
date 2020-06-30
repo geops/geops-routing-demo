@@ -405,12 +405,13 @@ class MapComponent extends Component {
    * @category Map
    */
   componentDidUpdate(prevProps) {
-    const { currentStopsGeoJSON, currentMot } = this.props;
+    const { currentStopsGeoJSON, currentMot, tracks } = this.props;
     const currentMotChanged = currentMot && currentMot !== prevProps.currentMot;
+    const tracksChanged = tracks !== prevProps.tracks;
     const currentStopsGeoJSONChanged =
       currentStopsGeoJSON &&
       currentStopsGeoJSON !== prevProps.currentStopsGeoJSON;
-    if (currentMotChanged || currentStopsGeoJSONChanged) {
+    if (currentMotChanged || currentStopsGeoJSONChanged || tracksChanged) {
       this.markerVectorSource.clear();
       Object.keys(currentStopsGeoJSON).forEach(key => {
         this.markerVectorSource.addFeatures(
@@ -482,11 +483,12 @@ class MapComponent extends Component {
       onShowNotification,
       onSetShowLoadingBar,
       onSetSelectedRoutes,
+      tracks,
     } = this.props;
 
     onSetShowLoadingBar(true);
 
-    Object.keys(currentStopsGeoJSON).forEach(key => {
+    Object.keys(currentStopsGeoJSON).forEach((key, idx) => {
       if (currentStopsGeoJSON[key].features) {
         // If the current item is a point selected on the map, not a station.
         hops.push(
@@ -495,7 +497,13 @@ class MapComponent extends Component {
             .reverse()}`,
         );
       } else if (!GRAPHHOPPER_MOTS.includes(currentMot)) {
-        hops.push(`!${currentStopsGeoJSON[key].properties.uid}`);
+        hops.push(
+          `!${currentStopsGeoJSON[key].properties.uid}${
+            tracks[idx] !== null
+              ? `${tracks[idx] ? `$${tracks[idx]}` : ''}`
+              : ''
+          }`,
+        );
       } else {
         hops.push(`${currentStopsGeoJSON[key].properties.name}`);
       }
@@ -621,6 +629,7 @@ const mapStateToProps = state => {
     routingElevation: state.MapReducer.routingElevation,
     resolveHops: state.MapReducer.resolveHops,
     olMap: state.MapReducer.olMap,
+    tracks: state.MapReducer.tracks,
   };
 };
 
@@ -663,6 +672,7 @@ MapComponent.propTypes = {
   currentMot: PropTypes.string.isRequired,
   routingElevation: PropTypes.number.isRequired,
   resolveHops: PropTypes.bool.isRequired,
+  tracks: PropTypes.arrayOf(PropTypes.string).isRequired,
   olMap: PropTypes.instanceOf(Map).isRequired,
 };
 

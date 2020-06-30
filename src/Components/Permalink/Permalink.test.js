@@ -30,6 +30,7 @@ describe('Permalink', () => {
         olMap: new Map({
           controls: [],
         }),
+        tracks: [null, null],
       },
     });
   });
