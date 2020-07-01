@@ -21,6 +21,7 @@ import nextId from 'react-id-generator';
 import _ from 'lodash/core';
 
 import {
+  setTracks,
   setCurrentStops,
   setCurrentStopsGeoJSON,
   setCurrentMot,
@@ -146,6 +147,7 @@ function RoutingMenu({
   const otherMotsVal = validateMots(mots, OTHER_MOTS);
 
   const center = useSelector(state => state.MapReducer.center);
+  const tracks = useSelector(state => state.MapReducer.tracks);
   const clickLocation = useSelector(state => state.MapReducer.clickLocation);
   const currentStops = useSelector(state => state.MapReducer.currentStops);
   const showLoadingBar = useSelector(state => state.MapReducer.showLoadingBar);
@@ -366,6 +368,12 @@ function RoutingMenu({
       updatedCurrentStops[fieldIndex] = '';
       setCurrentSearchResults([]);
       dispatch(setCurrentStops(updatedCurrentStops));
+
+      // Reset the track value.
+      const updatedTracks = [...tracks];
+      updatedTracks[fieldIndex] = null;
+      dispatch(setTracks(updatedTracks));
+
       dispatch(setShowLoadingBar(false));
       return;
     }

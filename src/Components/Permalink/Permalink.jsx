@@ -94,18 +94,20 @@ const getGeoJson = (viaString, APIKey, stationSearchUrl) => {
     });
 };
 
-const compileViaString = currentStopsGeoJson => {
+const compileViaString = (currentStopsGeoJson, tracks) => {
   if (!currentStopsGeoJson || Object.keys(currentStopsGeoJson).length < 2) {
     return null;
   }
 
-  const uidStrings = Object.keys(currentStopsGeoJson).map(key => {
+  const uidStrings = Object.keys(currentStopsGeoJson).map((key, idx) => {
     if (currentStopsGeoJson[key].features) {
       return `${to4326(
         currentStopsGeoJson[key].features[0].geometry.coordinates,
       )}`;
     }
-    return `!${currentStopsGeoJson[key].properties.uid}`;
+    return `!${currentStopsGeoJson[key].properties.uid}${
+      tracks[idx] ? `$${tracks[idx]}` : ''
+    }`;
   });
   return uidStrings.join('|');
 };
@@ -153,17 +155,14 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
         dispatch(setCurrentMot(newMot));
       }
 
-      if (urlSearch.tracks) {
-        dispatch(setTracks(urlSearch.tracks.split(',')));
-      }
-
       if (urlSearch.via) {
         // Set via stations if defined
         newParams.via = urlSearch.via;
         const viaArray = urlSearch.via.split('|');
         const geoJsonArray = viaArray.map(viaString =>
-          getGeoJson(viaString, APIKey, stationSearchUrl),
+          getGeoJson(viaString.split('$')[0], APIKey, stationSearchUrl),
         );
+        dispatch(setTracks(viaArray.map(stop => stop.split('$')[1])));
         Promise.all(geoJsonArray).then(values => {
           dispatch(
             setCurrentStops(
@@ -209,17 +208,8 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
     newParams.mot = currentMot;
     newParams.elevation = parseInt(routingElevation, 10);
     newParams['resolve-hops'] = resolveHops;
-    newParams.tracks = tracks
-      .map(f => {
-        if (f) {
-          return f.replace('$', '');
-        }
-        return '';
-      })
-      .join(',');
-
     if (Object.keys(currentStopsGeoJSON).length !== 0) {
-      newParams.via = compileViaString(currentStopsGeoJSON);
+      newParams.via = compileViaString(currentStopsGeoJSON, tracks);
     }
     setParams(newParams);
   }, [
