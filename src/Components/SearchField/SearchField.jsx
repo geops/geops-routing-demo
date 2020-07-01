@@ -31,7 +31,7 @@ const useStyles = makeStyles(() => ({
     },
   },
   fieldWrapper: {
-    maxWidth: '50%',
+    maxWidth: '55%',
   },
   buttonWrapper: {
     maxWidth: '26px',

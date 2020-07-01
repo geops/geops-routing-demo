@@ -14,7 +14,7 @@ const propTypes = {
 
 const useStyles = makeStyles(() => ({
   wrapper: {
-    width: '20%',
+    width: '15%',
     padding: '0 20px 4px 10px',
   },
 }));
@@ -32,7 +32,7 @@ function TrackSelect({ index, disabled }) {
   return (
     <FormControl className={classes.wrapper}>
       <Select
-        renderValue={val => (val === '' ? 'No Track' : val)}
+        renderValue={val => (val === '' ? '-' : val)}
         labelId="rd-track-select-label"
         value={track}
         displayEmpty
@@ -47,7 +47,7 @@ function TrackSelect({ index, disabled }) {
         {tracksValues.map(t => {
           return (
             <MenuItem value={t} key={`track-${t}`}>
-              {t === '' ? 'No Track' : t}
+              {t === '' ? '-' : t}
             </MenuItem>
           );
         })}
