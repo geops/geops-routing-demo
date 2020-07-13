@@ -34,6 +34,7 @@ function TrackSelect({ index, disabled }) {
 
   const tracksValues = useMemo(() => {
     return currentStopsGeoJSON[index] &&
+      currentStopsGeoJSON[index].properties &&
       currentStopsGeoJSON[index].properties.platforms &&
       currentStopsGeoJSON[index].properties.platforms[currentMot]
       ? currentStopsGeoJSON[index].properties.platforms[currentMot].sort(
