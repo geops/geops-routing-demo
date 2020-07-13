@@ -19,7 +19,6 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const tracksValues = ['1', '2', '3', '4', ''];
 /**
  * The component that displays the track selector
  */
@@ -27,7 +26,23 @@ function TrackSelect({ index, disabled }) {
   const classes = useStyles();
   const dispatch = useDispatch();
   const tracks = useSelector(state => state.MapReducer.tracks);
+  const currentMot = useSelector(state => state.MapReducer.currentMot);
+  const currentStopsGeoJSON = useSelector(
+    state => state.MapReducer.currentStopsGeoJSON,
+  );
   const track = useMemo(() => tracks[index], [index, tracks]);
+
+  const tracksValues = useMemo(() => {
+    return currentStopsGeoJSON[index] &&
+      currentStopsGeoJSON[index].properties.platforms &&
+      currentStopsGeoJSON[index].properties.platforms[currentMot]
+      ? currentStopsGeoJSON[index].properties.platforms[currentMot].sort(
+          (a, b) => {
+            return parseInt(a, 10) - parseInt(b, 10);
+          },
+        )
+      : [];
+  }, [index, currentMot, currentStopsGeoJSON]);
 
   return (
     <FormControl className={classes.wrapper}>
