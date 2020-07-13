@@ -84,11 +84,11 @@ describe('Permalink', () => {
       type: 'SET_CURRENT_MOT',
       currentMot: 'bus',
     });
-    expect(component.props().store.getActions()[1]).toEqual({
+    expect(component.props().store.getActions()[2]).toEqual({
       type: 'SET_ROUTING_ELEVATION',
       routingElevation: 2,
     });
-    expect(component.props().store.getActions()[2]).toEqual({
+    expect(component.props().store.getActions()[3]).toEqual({
       type: 'SET_RESOLVE_HOPS',
       resolveHops: true,
     });
