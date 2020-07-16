@@ -297,8 +297,10 @@ function RoutingMenu({
    * @param newMot The new selected mot
    * @category RoutingMenu
    */
-  const handleMotChange = (event, newMot) => {
+  const handleMotChange = (event, newMot, tracks) => {
+    const newTracks = [...tracks].map(f => '');
     setCurrentOtherMot(null);
+    dispatch(setTracks(newTracks));
     dispatch(setCurrentMot(newMot));
   };
 
@@ -512,7 +514,7 @@ function RoutingMenu({
       setCurrentOtherMot(null);
     } else {
       const { value } = evt.target;
-      handleMotChange({}, value);
+      handleMotChange({}, value, tracks);
       setCurrentOtherMot(value);
     }
   };
@@ -590,7 +592,7 @@ function RoutingMenu({
             value={DEFAULT_MOTS.includes(currentMot) ? currentMot : false}
             className={classes.tabs}
             onChange={(e, mot) => {
-              handleMotChange(e, mot);
+              handleMotChange(e, mot, tracks);
             }}
             indicatorColor="primary"
             textColor="primary"
