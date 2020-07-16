@@ -37,11 +37,12 @@ function TrackSelect({ index, disabled }) {
       currentStopsGeoJSON[index].properties &&
       currentStopsGeoJSON[index].properties.platforms &&
       currentStopsGeoJSON[index].properties.platforms[currentMot]
-      ? currentStopsGeoJSON[index].properties.platforms[currentMot].sort(
+      ? ['', ...currentStopsGeoJSON[index].properties.platforms[currentMot].sort(
           (a, b) => {
             return parseInt(a, 10) - parseInt(b, 10);
           },
         )
+      ]
       : [];
   }, [index, currentMot, currentStopsGeoJSON]);
 

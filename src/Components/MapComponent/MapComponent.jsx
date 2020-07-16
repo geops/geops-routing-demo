@@ -157,11 +157,14 @@ class MapComponent extends Component {
 
     translate.on('translateend', evt => {
       const {
+        tracks,
+        onSetTracks,
         currentStops,
         currentStopsGeoJSON,
         onSetCurrentStops,
         onSetCurrentStopsGeoJSON,
       } = this.props;
+      const newTracks = _.clone(tracks);
       const newCurrentStops = _.clone(currentStops);
       const newCurentStopsGeoJSON = _.clone(currentStopsGeoJSON);
 
@@ -179,6 +182,10 @@ class MapComponent extends Component {
         };
         featureIndex = currentStops.findIndex(isCoordPresent);
       }
+      if (featureIndex === -1) {
+        return
+      }
+      newTracks[featureIndex] = '';
       newCurrentStops[featureIndex] = evt.coordinate;
       newCurentStopsGeoJSON[featureIndex] = {
         type: 'FeatureCollection',
@@ -196,6 +203,7 @@ class MapComponent extends Component {
           },
         ],
       };
+      onSetTracks(newTracks);
       onSetCurrentStops(newCurrentStops);
       onSetCurrentStopsGeoJSON(newCurentStopsGeoJSON);
     });
@@ -224,12 +232,15 @@ class MapComponent extends Component {
     modify.on('modifyend', evt => {
       const { features } = this.initialRouteDrag;
       const {
+        tracks,
         currentMot,
         currentStops,
         currentStopsGeoJSON,
+        onSetTracks,
         onSetCurrentStops,
         onSetCurrentStopsGeoJSON,
       } = this.props;
+      const newTracks = [...tracks];
       const updatedCurrentStops = _.clone(currentStops);
       const updatedCurrentStopsGeoJSON = _.clone(currentStopsGeoJSON);
       let newHopIdx = -1;
@@ -273,6 +284,12 @@ class MapComponent extends Component {
           evt.mapBrowserEvent.coordinate,
         );
 
+        newTracks.splice(
+          newHopIdx,
+          0,
+          '',
+        );
+
         if (updatedCurrentStopsGeoJSON[newHopIdx]) {
           const keys = Object.keys(updatedCurrentStopsGeoJSON).reverse();
           keys.forEach(k => {
@@ -300,7 +317,7 @@ class MapComponent extends Component {
             }
           });
         }
-
+        onSetTracks(newTracks);
         onSetCurrentStops(updatedCurrentStops);
         onSetCurrentStopsGeoJSON(updatedCurrentStopsGeoJSON);
       }
@@ -636,6 +653,7 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
   return {
     onSetCenter: center => dispatch(actions.setCenter(center)),
+    onSetTracks: tracks => dispatch(actions.setTracks(tracks)),
     onSetCurrentStops: currentStops =>
       dispatch(actions.setCurrentStops(currentStops)),
     onSetCurrentStopsGeoJSON: currentStopsGeoJSON =>
@@ -659,6 +677,7 @@ MapComponent.propTypes = {
   APIKey: PropTypes.string.isRequired,
   stationSearchUrl: PropTypes.string.isRequired,
   onSetCenter: PropTypes.func.isRequired,
+  onSetTracks: PropTypes.func.isRequired,
   onSetClickLocation: PropTypes.func.isRequired,
   onShowNotification: PropTypes.func.isRequired,
   onSetShowLoadingBar: PropTypes.func.isRequired,

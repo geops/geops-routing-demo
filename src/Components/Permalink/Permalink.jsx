@@ -159,7 +159,11 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
         const geoJsonArray = viaArray.map(viaString =>
           getGeoJson(viaString.split('$')[0], APIKey, stationSearchUrl),
         );
-        dispatch(setTracks(viaArray.map(stop => stop.split('$')[1])));
+        dispatch(setTracks(viaArray.map(stop => {
+          const track = stop.split('$')[1];
+          return track || '';
+        })));
+
         Promise.all(geoJsonArray).then(values => {
           dispatch(
             setCurrentStops(

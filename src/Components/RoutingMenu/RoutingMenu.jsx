@@ -58,6 +58,13 @@ function TabPanel(props) {
   );
 }
 
+const swapFc = (input, index_A, index_B)  => {
+  let temp = input[index_A];
+
+  input[index_A] = input[index_B];
+  input[index_B] = temp;
+};
+
 /**
  * The routing menu props
  * @typedef RoutingMenuProps
@@ -219,12 +226,15 @@ function RoutingMenu({
         },
       ],
     };
+    const updatedTracks = [...tracks];
+    updatedTracks[updatedFocusedFieldIndex - 1] = '';
     updatedCurrentStopsGeoJSON[focusedFieldIndex] = tempGeoJSON;
     updateCurrentStops(
       updatedCurrentStops,
       updatedCurrentStopsGeoJSON,
       updatedFocusedFieldIndex,
     );
+    dispatch(setTracks(updatedTracks));
     dispatch(setCurrentStopsGeoJSON(updatedCurrentStopsGeoJSON));
   };
 
@@ -322,6 +332,10 @@ function RoutingMenu({
       });
     }
 
+    const updatedTracks = [...tracks];
+    updatedTracks.splice(indexToInsertAt, 0, '');
+
+    dispatch(setTracks(updatedTracks));
     dispatch(setCurrentStops(updatedCurrentStops));
     dispatch(setCurrentStopsGeoJSON(updatedCurrentStopsGeoJSON));
   };
@@ -350,6 +364,10 @@ function RoutingMenu({
       delete updatedCurrentStopsGeoJSON[keys.length - 1];
     }
 
+    const updatedTracks = [...tracks];
+    updatedTracks.splice(indexToRemoveFrom, 1);
+
+    dispatch(setTracks(updatedTracks));
     dispatch(setCurrentStops(updatedCurrentStops));
     dispatch(setCurrentStopsGeoJSON(updatedCurrentStopsGeoJSON));
   };
@@ -371,7 +389,7 @@ function RoutingMenu({
 
       // Reset the track value.
       const updatedTracks = [...tracks];
-      updatedTracks[fieldIndex] = null;
+      updatedTracks[fieldIndex] = '';
       dispatch(setTracks(updatedTracks));
 
       dispatch(setShowLoadingBar(false));
@@ -548,6 +566,10 @@ function RoutingMenu({
       });
     }
 
+    const updatedTracks = [...tracks];
+    swapFc(updatedTracks, result.source.index, result.destination.index);
+
+    dispatch(setTracks(updatedTracks));
     dispatch(setCurrentStops(updatedCurrentStops));
     dispatch(setCurrentStopsGeoJSON(updatedCurrentStopsGeoJSON));
   };
