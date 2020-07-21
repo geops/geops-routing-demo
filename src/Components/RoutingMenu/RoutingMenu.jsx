@@ -497,6 +497,10 @@ function RoutingMenu({
     const updatedCurrentStopsGeoJSON = _.clone(currentStopsGeoJSON);
     updatedCurrentStopsGeoJSON[focusedFieldIndex] = searchResult;
     dispatch(setCurrentStops(updatedCurrentStops));
+
+    const updatedTracks = [...tracks];
+    updatedTracks[focusedFieldIndex] = '';
+    dispatch(setTracks(updatedTracks));
     setCurrentSearchResults([]);
 
     Object.keys(updatedCurrentStopsGeoJSON).forEach(key => {

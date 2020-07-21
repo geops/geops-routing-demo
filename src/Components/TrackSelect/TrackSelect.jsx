@@ -14,9 +14,19 @@ const propTypes = {
 
 const useStyles = makeStyles(() => ({
   wrapper: {
-    width: '15%',
+    width: '12%',
     padding: '0 10px 4px 10px',
   },
+}));
+
+const selectStyles = makeStyles(() => ({
+  select: {
+    paddingRight: '17px !important',
+  },
+  icon: {
+    width: '0.8em',
+    height: '0.8em',
+  }
 }));
 
 /**
@@ -24,6 +34,7 @@ const useStyles = makeStyles(() => ({
  */
 function TrackSelect({ index, disabled }) {
   const classes = useStyles();
+  const selectClasses = selectStyles();
   const dispatch = useDispatch();
   const tracks = useSelector(state => state.MapReducer.tracks);
   const currentMot = useSelector(state => state.MapReducer.currentMot);
@@ -49,11 +60,12 @@ function TrackSelect({ index, disabled }) {
   return (
     <FormControl className={classes.wrapper}>
       <Select
+        classes={selectClasses}
         renderValue={val => (val === '' ? '-' : val)}
         labelId="rd-track-select-label"
         value={track}
         displayEmpty
-        disabled={disabled}
+        disabled={disabled || !tracksValues.length}
         onChange={evt => {
           const newTracks = [...tracks];
           const { value } = evt.target;
