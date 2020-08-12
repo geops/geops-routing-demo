@@ -183,7 +183,7 @@ class MapComponent extends Component {
         featureIndex = currentStops.findIndex(isCoordPresent);
       }
       if (featureIndex === -1) {
-        return
+        return;
       }
       newTracks[featureIndex] = '';
       newCurrentStops[featureIndex] = evt.coordinate;
@@ -284,11 +284,7 @@ class MapComponent extends Component {
           evt.mapBrowserEvent.coordinate,
         );
 
-        newTracks.splice(
-          newHopIdx,
-          0,
-          '',
-        );
+        newTracks.splice(newHopIdx, 0, '');
 
         if (updatedCurrentStopsGeoJSON[newHopIdx]) {
           const keys = Object.keys(updatedCurrentStopsGeoJSON).reverse();

@@ -58,11 +58,13 @@ function TabPanel(props) {
   );
 }
 
-const swapFc = (input, index_A, index_B)  => {
-  let temp = input[index_A];
+const swapFc = (input, indexA, indexB) => {
+  const temp = input[indexA];
 
-  input[index_A] = input[index_B];
-  input[index_B] = temp;
+  // eslint-disable-next-line no-param-reassign
+  input[indexA] = input[indexB];
+  // eslint-disable-next-line no-param-reassign
+  input[indexB] = temp;
 };
 
 /**
@@ -297,8 +299,8 @@ function RoutingMenu({
    * @param newMot The new selected mot
    * @category RoutingMenu
    */
-  const handleMotChange = (event, newMot, tracks) => {
-    const newTracks = [...tracks].map(f => '');
+  const handleMotChange = (event, newMot, tracksVal) => {
+    const newTracks = [...tracksVal].map(() => '');
     setCurrentOtherMot(null);
     dispatch(setTracks(newTracks));
     dispatch(setCurrentMot(newMot));

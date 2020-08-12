@@ -65,7 +65,10 @@ const getGeoJson = (viaString, APIKey, stationSearchUrl) => {
 
   /* When the via is a UID */
   if (/^![a-zA-Z0-9]{16}$/.test(viaString)) {
-    reqUrl = `${stationSearchUrl}lookup/${viaString.replace('!', '')}/?key=${APIKey}`;
+    reqUrl = `${stationSearchUrl}lookup/${viaString.replace(
+      '!',
+      '',
+    )}/?key=${APIKey}`;
   } else {
     /* search for the station. Remove ! in case it's an IBNR */
     reqUrl = `${stationSearchUrl}?q=${viaString.replace(
@@ -159,10 +162,14 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
         const geoJsonArray = viaArray.map(viaString =>
           getGeoJson(viaString.split('$')[0], APIKey, stationSearchUrl),
         );
-        dispatch(setTracks(viaArray.map(stop => {
-          const track = stop.split('$')[1];
-          return track || '';
-        })));
+        dispatch(
+          setTracks(
+            viaArray.map(stop => {
+              const track = stop.split('$')[1];
+              return track || '';
+            }),
+          ),
+        );
 
         Promise.all(geoJsonArray).then(values => {
           dispatch(
