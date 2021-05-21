@@ -1,9 +1,7 @@
 
 # geOps Routing Demo
 
-![npm_version](https://img.shields.io/npm/v/geops-routing-demo)
 [![Netlify Status](https://api.netlify.com/api/v1/badges/8a6049ca-1c43-4cb7-971e-08911d474bfb/deploy-status)](https://app.netlify.com/sites/dreamy-goldberg-5df06f/deploys)
-![keywords](https://img.shields.io/github/package-json/keywords/ibrahimawadhamid/geops-routing-demo)
 
 React app showing how to use the geOps Routing API.
 
