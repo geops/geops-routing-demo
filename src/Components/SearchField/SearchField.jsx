@@ -54,6 +54,7 @@ function SearchField(props) {
   const classes = useStyles();
   const dispatch = useDispatch();
   const showLoadingBar = useSelector(state => state.MapReducer.showLoadingBar);
+  const map = useSelector(state => state.MapReducer.olMap);
   const {
     index,
     addNewSearchFieldHandler,
@@ -201,6 +202,9 @@ function SearchField(props) {
           value={formatSingleStop(singleStop)}
           onKeyDown={processHighlightedResultSelectHandler}
           onFocus={() => {
+            setTimeout(() => {
+              map.updateSize();
+            }, 3000);
             dispatch(setIsFieldFocused(true));
             onFieldFocusHandler(index);
           }}
