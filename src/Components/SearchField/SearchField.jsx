@@ -111,7 +111,7 @@ function SearchField(props) {
               className={classes.button}
               aria-label="Add Via Point"
               size="small"
-              disabled={addNextHopDisabled || showLoadingBar}
+              disabled={addNextHop# || showLoadingBar}
             >
               <AddCircleOutlineIcon
                 fontSize="small"
@@ -254,7 +254,6 @@ function SearchField(props) {
       {currentMot === 'foot' ? (
         <FloorSelect
           index={index}
-          disabled={!isStationName}
           singleStop={singleStop}
         />
       ) : null}
