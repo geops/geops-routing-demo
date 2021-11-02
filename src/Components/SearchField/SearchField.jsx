@@ -111,7 +111,7 @@ function SearchField(props) {
               className={classes.button}
               aria-label="Add Via Point"
               size="small"
-              disabled={addNextHop# || showLoadingBar}
+              disabled={addNextHopDisabled || showLoadingBar}
             >
               <AddCircleOutlineIcon
                 fontSize="small"
