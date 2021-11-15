@@ -175,6 +175,7 @@ function RoutingMenu({
   const center = useSelector(state => state.MapReducer.center);
   const tracks = useSelector(state => state.MapReducer.tracks);
   const clickLocation = useSelector(state => state.MapReducer.clickLocation);
+  const activeFloor = useSelector(state => state.MapReducer.activeFloor);
   const currentStops = useSelector(state => state.MapReducer.currentStops);
   const selectedRoutes = useSelector(state => state.MapReducer.selectedRoutes);
   const showLoadingBar = useSelector(state => state.MapReducer.showLoadingBar);
@@ -230,8 +231,11 @@ function RoutingMenu({
 
       tracks[focusedFieldIndex] = '';
 
-      // Let floorSelect component decides if the floor exist on the new point or not
-      // floorInfo[focusedFieldIndex] = '0';
+      // If an active floor is set, we set the floor to the active floor
+      // then the floorSelect component will decide if the floor exist or not
+      if (activeFloor && activeFloor !== '2D') {
+        floorInfo[focusedFieldIndex] = activeFloor;
+      }
 
       // Create GeoJSON
       currentStopsGeoJSON[focusedFieldIndex] = {
@@ -255,12 +259,13 @@ function RoutingMenu({
       // Make sure we only goes here once when the clickLocation has been modified.
       dispatch(setClickLocation(null));
       dispatch(setTracks([...tracks]));
-      // dispatch(setFloorInfo([...floorInfo]));
+      dispatch(setFloorInfo([...floorInfo]));
       dispatch(setCurrentStops([...currentStops]));
       dispatch(setCurrentStopsGeoJSON([...currentStopsGeoJSON]));
       setFocusedFieldIndex(nextFocusFieldIdx);
     }
   }, [
+    activeFloor,
     clickLocation,
     currentStops,
     currentStopsGeoJSON,
@@ -308,6 +313,7 @@ function RoutingMenu({
     dispatch(setFloorInfo([...floorInfo]));
     dispatch(setCurrentStops([...currentStops]));
     dispatch(setCurrentStopsGeoJSON([...currentStopsGeoJSON]));
+    setFocusedFieldIndex(indexToInsertAt);
   };
 
   /**
