@@ -42,6 +42,7 @@ function FloorSelect({ index, disabled, singleStop }) {
   const classes = useStyles();
   const dispatch = useDispatch();
   const floorInfo = useSelector(state => state.MapReducer.floorInfo);
+  const activeFloor = useSelector(state => state.MapReducer.activeFloor);
   const floor = useMemo(() => floorInfo[index], [index, floorInfo]);
   const [floors, setFloors] = useState([floor || '0']);
 
@@ -73,17 +74,24 @@ function FloorSelect({ index, disabled, singleStop }) {
             );
             return;
           }
+
           // Use String levels
           if (!availableLevels.length) {
             // if the array is empty we replace it by ['0'] to avoid warnings.
             availableLevels = ['0'];
           }
 
+          // Convert to string
           const newFloors = availableLevels.join().split(',');
+          const stringActiveFloor = `${activeFloor}`;
 
           // If the old floor doesn't exist at the new coordinate try to pick one.
           if (floor && !newFloors.includes(floor)) {
-            if (floor !== '0' && newFloors.includes('0')) {
+            // We pick the current activer floor if it exists.
+            if (newFloors.includes(stringActiveFloor)) {
+              floorInfo[index] = stringActiveFloor;
+              // Or we pick the floor 0 if it exsits.
+            } else if (floor !== '0' && newFloors.includes('0')) {
               floorInfo[index] = '0';
             } else {
               // If the level 0 doesn't exist pick the one in the middle
