@@ -31,7 +31,6 @@ import {
 } from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import PropTypes from 'prop-types';
-import nextId from 'react-id-generator';
 
 import {
   setTracks,
@@ -74,7 +73,6 @@ function TabPanel(props) {
       component="div"
       role="tabpanel"
       hidden={value !== index}
-      id={nextId()}
       style={{ paddingTop: '10px', paddingBottom: '10px' }}
       aria-labelledby={`simple-tab-${index}`}
     >

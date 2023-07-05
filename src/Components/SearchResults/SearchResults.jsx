@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import nextId from 'react-id-generator';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -60,7 +59,7 @@ function SearchResults(props) {
                   processClickedResultHandler(searchResult);
                 }}
                 button
-                key={nextId()}
+                key={searchResult.properties.id}
               >
                 <ListItemIcon>
                   <MapMarkerIcon />

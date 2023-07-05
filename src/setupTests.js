@@ -7,8 +7,6 @@ import '@testing-library/jest-dom/extend-expect';
 import { CanvasPattern } from 'canvas';
 
 /* eslint-disable import/no-extraneous-dependencies */
-import 'react-app-polyfill/stable';
-import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only';
 // jest-dom adds custom jest matchers for asserting on DOM nodes.
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
