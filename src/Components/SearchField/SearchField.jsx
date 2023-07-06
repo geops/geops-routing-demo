@@ -83,14 +83,9 @@ function SearchField(props) {
       container
       spacing={1}
       alignItems="flex-end"
-      style={{ padding: '10px 0px 10px 0px', flexWrap: 'nowrap' }}
+      style={{ padding: '2px 0px 2px 0px', flexWrap: 'nowrap' }}
     >
-      <Grid
-        item
-        xs={1}
-        textAlign="right"
-        style={{ minWidth: 35, maxWidth: 44 }}
-      >
+      <Grid item xs={1} textAlign="right" style={{ minWidth: 35 }}>
         <Tooltip title="Change order of the via points">
           <span>
             <IconButton
@@ -107,9 +102,8 @@ function SearchField(props) {
       <Grid
         item
         xs={1}
-        textAlign="left"
-        padding={0}
-        style={{ minWidth: 35, maxWidth: 44 }}
+        textAlign="center"
+        style={{ minWidth: 30, paddingLeft: 0 }}
       >
         <Tooltip title="Pan to the feature">
           <span>
@@ -123,7 +117,7 @@ function SearchField(props) {
           </span>
         </Tooltip>
       </Grid>
-      <Grid item xs={7} style={{ minWidth: 100, maxWidth: 400 }}>
+      <Grid item xs={7} style={{ minWidth: 100 }}>
         <TextField
           fullWidth
           inputRef={inputReference}
@@ -151,7 +145,7 @@ function SearchField(props) {
           }}
         />
       </Grid>
-      <Grid item xs={1} style={{ minWidth: 46, maxWidth: 120 }}>
+      <Grid item xs={2} style={{ minWidth: 46, maxWidth: 84 }}>
         {currentMot === 'foot' ? (
           <FloorSelect
             index={index}

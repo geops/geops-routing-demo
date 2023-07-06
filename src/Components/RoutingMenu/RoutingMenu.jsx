@@ -808,8 +808,8 @@ function RoutingMenu({
               currentSearchResults={currentSearchResults}
               processClickedResultHandler={processClickedResultHandler}
             />
-            <Grid container style={{ margin: '10px 0px' }}>
-              <Grid item xs={6} textAlign="center">
+            <Grid container padding={3} style={{ paddingBottom: 10 }}>
+              <Grid item xs={6}>
                 <Tooltip title="Zoom to the route">
                   <span>
                     <Button
@@ -822,7 +822,7 @@ function RoutingMenu({
                   </span>
                 </Tooltip>
               </Grid>
-              <Grid item xs={6} textAlign="center">
+              <Grid item xs={6}>
                 <Tooltip title="Route information">
                   <span>
                     <Button
