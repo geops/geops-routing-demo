@@ -1,15 +1,18 @@
-@import '../../globals.scss';
+$grey-selected: #444;
 
 .tm-floor-button-wrapper {
   .tm-button {
     cursor: pointer;
     height: 50px;
     width: 50px;
+    min-width: 50px;
     display: flex;
     justify-content: center;
     align-items: center;
     border: 1px solid #aaa;
     border-bottom-color: white;
+    border-radius: 0;
+    font-weight: normal;
   }
 
   .tm-square-white {
@@ -25,6 +28,7 @@
     &:hover:not(.tm-active) {
       color: $grey-selected;
       border: 1px solid $grey-selected;
+      background: white;
 
       svg {
         polyline,

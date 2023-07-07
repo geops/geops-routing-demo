@@ -3,14 +3,14 @@ import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import Popup from 'react-spatial/components/Popup';
 import { containsCoordinate } from 'ol/extent';
-import IconButton from '@material-ui/core/IconButton';
-import { makeStyles } from '@material-ui/core/styles';
+import IconButton from '@mui/material/IconButton';
+import { makeStyles } from '@mui/styles';
 import './MapFloorSwitcher.scss';
 import { Feature } from 'ol';
 import { Point } from 'ol/geom';
-import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
-import Typography from '@material-ui/core/Typography';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import Typography from '@mui/material/Typography';
 import { unByKey } from 'ol/Observable';
 import { setActiveFloor } from '../../store/actions/Map';
 
@@ -35,8 +35,8 @@ const shouldDisplayButton = (map, coord) => {
 function MapFloorSwitcher({ route, nextRoute }) {
   const classes = useStyles();
   const dispatch = useDispatch();
-  const map = useSelector(state => state.MapReducer.olMap);
-  const activeFloor = useSelector(state => state.MapReducer.activeFloor);
+  const map = useSelector((state) => state.MapReducer.olMap);
+  const activeFloor = useSelector((state) => state.MapReducer.activeFloor);
   const coord = route.getGeometry().getLastCoordinate();
   const [isInExtent, setInExtent] = useState(shouldDisplayButton(map, coord));
 

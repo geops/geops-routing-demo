@@ -1,29 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { transformExtent } from 'ol/proj';
-import { makeStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
-import MenuItem from '@material-ui/core/MenuItem';
-import Select from '@material-ui/core/Select';
-import Slide from '@material-ui/core/Slide';
-import FormControl from '@material-ui/core/FormControl';
-import Typography from '@material-ui/core/Typography';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import Button from '@material-ui/core/Button';
-import Tooltip from '@material-ui/core/Tooltip';
-import Grid from '@material-ui/core/Grid';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
-import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import ZoomInIcon from '@material-ui/icons/ZoomIn';
-import InfoIcon from '@material-ui/icons/Info';
+import {
+  Button,
+  Checkbox,
+  FormControlLabel,
+  FormControl,
+  Grid,
+  IconButton,
+  LinearProgress,
+  MenuItem,
+  Paper,
+  Select,
+  Slide,
+  Tabs,
+  Tab,
+  Tooltip,
+  Typography,
+  useMediaQuery,
+} from '@mui/material';
+import { makeStyles, withStyles } from '@mui/styles';
+import {
+  ArrowLeft,
+  ArrowRight,
+  ZoomIn,
+  Info,
+  BugReport,
+  ExpandMore,
+  ExpandLess,
+} from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import PropTypes from 'prop-types';
-import nextId from 'react-id-generator';
 
 import {
   setTracks,
@@ -38,6 +45,8 @@ import {
   setSearchMode,
   setIsRouteInfoOpen,
   setClickLocation,
+  setGeneralizationActive,
+  setYamlSnippetDialogOpen,
 } from '../../store/actions/Map';
 import './RoutingMenu.scss';
 import {
@@ -53,6 +62,9 @@ import SearchField from '../SearchField';
 
 const COORD_REGEX = /^\d+\.?\d*,\d+\.?\d*$/;
 
+const motHasGeneralization = (mot) =>
+  /^(rail|funicular|ferry|gondola|bus|tram|subway)$/.test(mot);
+
 function TabPanel(props) {
   const { children, value, index } = props;
 
@@ -61,14 +73,23 @@ function TabPanel(props) {
       component="div"
       role="tabpanel"
       hidden={value !== index}
-      id={nextId()}
-      style={{ paddingBottom: '20px' }}
+      style={{ paddingTop: '10px', paddingBottom: '10px' }}
       aria-labelledby={`simple-tab-${index}`}
     >
       {value === index && children}
     </Typography>
   );
 }
+
+const RdCheckbox = withStyles({
+  root: {
+    '&$checked': {
+      color: '#3f51b5',
+    },
+  },
+  checked: {},
+  // eslint-disable-next-line react/jsx-props-no-spreading
+})((props) => <Checkbox color="default" {...props} />);
 
 /**
  * The routing menu props
@@ -81,21 +102,55 @@ function TabPanel(props) {
  * @category Props
  */
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles((theme) => ({
+  header: {
+    display: 'flex',
+    width: 'calc(100% - 32px)',
+    gap: '10px',
+    [theme.breakpoints.only('xs')]: {
+      width: '100%',
+      flexWrap: 'wrap',
+    },
+  },
   tabs: {
-    width: '75%',
+    [theme.breakpoints.only('xs')]: {
+      width: '100%',
+    },
+  },
+  otherHeaderActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 20,
+    [theme.breakpoints.only('xs')]: {
+      width: '100%',
+      margin: '0 20px',
+    },
   },
   tab: {
-    minWidth: '33%',
-    width: '33%',
+    minWidth: 100,
+    [theme.breakpoints.only('sm')]: {
+      minWidth: '10vw',
+    },
+    [theme.breakpoints.only('xs')]: {
+      minWidth: 100,
+      width: '33%',
+    },
   },
   dropDown: {
-    width: '25%',
+    maxWidth: 120,
+    minWidth: 90,
     backgroundColor: 'white',
   },
   select: {
-    height: '100%',
+    height: '80%',
     textAlign: 'center',
+
+    '& fieldset': {
+      border: 'none',
+    },
+  },
+  selectRoot: {
+    paddingLeft: '0px !important',
   },
   selectInput: {
     backgroundColor: 'white',
@@ -104,7 +159,11 @@ const useStyles = makeStyles(() => ({
     },
   },
   checkbox: {
-    margin: '0px 5px 0px 13px',
+    overflow: 'hidden',
+  },
+  checkboxLabel: {
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
   },
 }));
 
@@ -120,11 +179,11 @@ const validateMots = (motsArray, validationMots) => {
   const currentMotsArray = [];
 
   motsArray
-    .filter(mot => {
+    .filter((mot) => {
       return validationMots.includes(mot);
     })
-    .forEach(providedMot => {
-      const requestedMot = validationMots.find(mot => mot === providedMot);
+    .forEach((providedMot) => {
+      const requestedMot = validationMots.find((mot) => mot === providedMot);
       if (requestedMot) {
         currentMotsArray.push({
           name: requestedMot,
@@ -142,7 +201,7 @@ const validateMots = (motsArray, validationMots) => {
 };
 
 // Currently no 'coach' mot available for stop finder.
-const handleStopFinderMot = mot => {
+const handleStopFinderMot = (mot) => {
   if (mot === 'coach') return 'bus';
   if (mot === 'foot' || mot === 'car') return '';
   return mot;
@@ -171,23 +230,37 @@ function RoutingMenu({
   const currentMotsVal = validateMots(mots, DEFAULT_MOTS);
   const otherMotsVal = validateMots(mots, OTHER_MOTS);
 
-  const floorInfo = useSelector(state => state.MapReducer.floorInfo);
-  const center = useSelector(state => state.MapReducer.center);
-  const tracks = useSelector(state => state.MapReducer.tracks);
-  const clickLocation = useSelector(state => state.MapReducer.clickLocation);
-  const activeFloor = useSelector(state => state.MapReducer.activeFloor);
-  const currentStops = useSelector(state => state.MapReducer.currentStops);
-  const selectedRoutes = useSelector(state => state.MapReducer.selectedRoutes);
-  const showLoadingBar = useSelector(state => state.MapReducer.showLoadingBar);
-  const maxExtent = useSelector(state => state.MapReducer.maxExtent);
+  const floorInfo = useSelector((state) => state.MapReducer.floorInfo);
+  const center = useSelector((state) => state.MapReducer.center);
+  const tracks = useSelector((state) => state.MapReducer.tracks);
+  const clickLocation = useSelector((state) => state.MapReducer.clickLocation);
+  const activeFloor = useSelector((state) => state.MapReducer.activeFloor);
+  const currentStops = useSelector((state) => state.MapReducer.currentStops);
+  const selectedRoutes = useSelector(
+    (state) => state.MapReducer.selectedRoutes,
+  );
+  const showLoadingBar = useSelector(
+    (state) => state.MapReducer.showLoadingBar,
+  );
+  const maxExtent = useSelector((state) => state.MapReducer.maxExtent);
   const isRouteInfoOpen = useSelector(
-    state => state.MapReducer.isRouteInfoOpen,
+    (state) => state.MapReducer.isRouteInfoOpen,
   );
   const currentStopsGeoJSON = useSelector(
-    state => state.MapReducer.currentStopsGeoJSON,
+    (state) => state.MapReducer.currentStopsGeoJSON,
   );
-  const currentMot = useSelector(state => state.MapReducer.currentMot);
-  const searchMode = useSelector(state => state.MapReducer.searchMode);
+  const currentMot = useSelector((state) => state.MapReducer.currentMot);
+  const searchMode = useSelector((state) => state.MapReducer.searchMode);
+  const generalizationEnabled = useSelector(
+    (state) => state.MapReducer.generalizationEnabled,
+  );
+  const generalizationActive = useSelector(
+    (state) => state.MapReducer.generalizationActive,
+  );
+  const mode = useSelector((state) => state.MapReducer.mode);
+  const yamlSnippetDialogOpen = useSelector(
+    (state) => state.MapReducer.yamlSnippetDialogOpen,
+  );
 
   const [currentMots] = useState(currentMotsVal);
   const [otherMots] = useState(otherMotsVal);
@@ -293,7 +366,7 @@ function RoutingMenu({
    * @param fieldIndex The search field index(order)
    * @category RoutingMenu
    */
-  const onFieldFocusHandler = fieldIndex => {
+  const onFieldFocusHandler = (fieldIndex) => {
     setFocusedFieldIndex(fieldIndex);
     dispatch(setIsFieldFocused(true));
   };
@@ -322,7 +395,7 @@ function RoutingMenu({
    * @param indexToRemoveFrom The index to remove the search field from.
    * @category RoutingMenu
    */
-  const removeSearchFieldHandler = indexToRemoveFrom => {
+  const removeSearchFieldHandler = (indexToRemoveFrom) => {
     tracks.splice(indexToRemoveFrom, 1);
     floorInfo.splice(indexToRemoveFrom, 1);
     currentStops.splice(indexToRemoveFrom, 1);
@@ -414,8 +487,8 @@ function RoutingMenu({
     ).toString()}`;
 
     fetch(reqUrl, { signal })
-      .then(response => response.json())
-      .then(response => {
+      .then((response) => response.json())
+      .then((response) => {
         if (response.error) {
           dispatch(showNotification("Couldn't find stations", 'warning'));
           return;
@@ -429,7 +502,7 @@ function RoutingMenu({
         setCurrentSearchResults(response.features);
         dispatch(setShowLoadingBar(false));
       })
-      .catch(err => {
+      .catch((err) => {
         if (err.name === 'AbortError') {
           // eslint-disable-next-line no-console
           console.warn(`Abort ${reqUrl}`);
@@ -447,7 +520,7 @@ function RoutingMenu({
    * @param event
    * @category RoutingMenu
    */
-  const processHighlightedResultSelectHandler = event => {
+  const processHighlightedResultSelectHandler = (event) => {
     const [firstSearchResult] = currentSearchResults;
     if (event.key === 'Enter' && firstSearchResult) {
       // The user has chosen the first result by pressing 'Enter' key on keyboard
@@ -464,7 +537,7 @@ function RoutingMenu({
    * @param searchResult The clicked search result.
    * @category RoutingMenu
    */
-  const processClickedResultHandler = searchResult => {
+  const processClickedResultHandler = (searchResult) => {
     currentStops[focusedFieldIndex] = searchResult.properties.name;
 
     // Add an element to the array if necessary
@@ -494,7 +567,7 @@ function RoutingMenu({
     dispatch(setCurrentStopsGeoJSON([...currentStopsGeoJSON]));
   };
 
-  const changeCurrentOtherMot = evt => {
+  const changeCurrentOtherMot = (evt) => {
     if (!evt) {
       setCurrentOtherMot(null);
     } else {
@@ -510,7 +583,7 @@ function RoutingMenu({
     ...draggableStyle,
   });
 
-  const onDragEnd = result => {
+  const onDragEnd = (result) => {
     // dropped outside the list
     if (!result.destination) {
       return;
@@ -544,56 +617,63 @@ function RoutingMenu({
   }
 
   return (
-    <>
-      <div className="rd-routing-menu">
-        <Slide
-          direction={isDesktop ? 'right' : 'down'}
-          in={menuVisible}
-          mountOnEnter
-          unmountOnExit
-        >
-          <Paper square elevation={3}>
-            <div style={{ height: 5 }}>
-              {showLoadingBar ? <LinearProgress /> : null}
-            </div>
-            <div className="rd-routing-menu-header">
-              <Tabs
-                value={DEFAULT_MOTS.includes(currentMot) ? currentMot : false}
-                className={classes.tabs}
-                onChange={(e, mot) => {
-                  handleMotChange(e, mot, tracks);
-                }}
-                indicatorColor="primary"
-                textColor="primary"
-                aria-label="mots icons"
-              >
-                {currentMots.map(singleMot => {
-                  return (
+    <div className="rd-routing-menu">
+      <Slide
+        direction={isDesktop ? 'right' : 'down'}
+        in={menuVisible}
+        mountOnEnter
+        unmountOnExit
+      >
+        <Paper square elevation={3}>
+          <div style={{ height: 5 }}>
+            {showLoadingBar ? <LinearProgress /> : null}
+          </div>
+          <div className={classes.header}>
+            <Tabs
+              value={DEFAULT_MOTS.includes(currentMot) ? currentMot : false}
+              className={classes.tabs}
+              onChange={(e, mot) => {
+                handleMotChange(e, mot, tracks);
+              }}
+              indicatorColor="primary"
+              textColor="primary"
+              aria-label="mots icons"
+            >
+              {currentMots.map((singleMot) => {
+                const { name, icon } = singleMot;
+                const capitalName =
+                  name.charAt(0).toUpperCase() + name.slice(1);
+                return (
+                  <Tooltip title={capitalName} value={name} key={`mot-${name}`}>
                     <Tab
                       className={classes.tab}
-                      key={`mot-${singleMot.name}`}
-                      value={singleMot.name}
-                      icon={singleMot.icon}
-                      aria-label={singleMot.name}
+                      value={name}
+                      icon={icon}
+                      aria-label={name}
                       disabled={showLoadingBar}
                     />
-                  );
-                })}
-              </Tabs>
+                  </Tooltip>
+                );
+              })}
+            </Tabs>
+            <div className={classes.otherHeaderActions}>
               {otherMots.length ? (
                 <FormControl className={classes.dropDown}>
                   <Select
-                    renderValue={val => (val !== '' ? val : 'Other MOTs')}
+                    renderValue={(val) => (val !== '' ? val : 'Other MOTs')}
                     className={classes.select}
-                    classes={{ root: classes.selectInput }}
+                    classes={{
+                      select: classes.selectRoot,
+                      nativeInput: classes.selectInput,
+                    }}
+                    variant="standard"
                     labelId="rd-other-mot-label"
                     value={currentOtherMot || ''}
-                    disableUnderline={!currentOtherMot}
                     displayEmpty
                     onChange={changeCurrentOtherMot}
                     disabled={showLoadingBar}
                   >
-                    {otherMots.map(mot => {
+                    {otherMots.map((mot) => {
                       return (
                         <MenuItem
                           value={mot.name}
@@ -609,15 +689,20 @@ function RoutingMenu({
               {currentMot === 'foot' ? (
                 <FormControl className={classes.dropDown}>
                   <Select
-                    renderValue={val => val}
+                    renderValue={(val) => val}
                     className={classes.select}
-                    classes={{ root: classes.selectInput }}
+                    classes={{
+                      select: classes.selectRoot,
+                      nativeInput: classes.selectInput,
+                    }}
                     labelId="rd-other-mot-label"
+                    variant="standard"
                     value={searchMode}
-                    disableUnderline
-                    onChange={evt => dispatch(setSearchMode(evt.target.value))}
+                    onChange={(evt) =>
+                      dispatch(setSearchMode(evt.target.value))
+                    }
                   >
-                    {SEARCH_MODES.map(option => {
+                    {SEARCH_MODES.map((option) => {
                       return (
                         <MenuItem value={option} key={option}>
                           {option}
@@ -627,156 +712,173 @@ function RoutingMenu({
                   </Select>
                 </FormControl>
               ) : null}
-            </div>
-            <TabPanel>
-              <DragDropContext onDragEnd={onDragEnd}>
-                <Droppable droppableId="droppable">
-                  {provided => (
-                    <div
-                      className="stopsContainer"
-                      // eslint-disable-next-line react/jsx-props-no-spreading
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      style={{
-                        background: 'white',
-                      }}
-                    >
-                      {currentStops.map((item, index) => (
-                        <Draggable
-                          // eslint-disable-next-line react/no-array-index-key
-                          key={`searchField-${index}`}
-                          draggableId={`searchField-${index}`}
-                          index={index}
-                        >
-                          {(prov, snpsht) => (
-                            <div
-                              ref={prov.innerRef}
-                              // eslint-disable-next-line react/jsx-props-no-spreading
-                              {...prov.draggableProps}
-                              // eslint-disable-next-line react/jsx-props-no-spreading
-                              {...prov.dragHandleProps}
-                              style={getItemStyle(
-                                snpsht.isDragging,
-                                prov.draggableProps.style,
-                              )}
-                            >
-                              <SearchField
-                                // eslint-disable-next-line react/no-array-index-key
-                                key={`searchField-${index}`}
-                                index={index}
-                                inputReference={elRefs.current[index]}
-                                addNewSearchFieldHandler={
-                                  addNewSearchFieldHandler
-                                }
-                                currentStops={currentStops}
-                                currentMot={currentMot}
-                                removeSearchFieldHandler={
-                                  removeSearchFieldHandler
-                                }
-                                searchStopsHandler={searchStopsHandler}
-                                singleStop={item}
-                                processHighlightedResultSelectHandler={
-                                  processHighlightedResultSelectHandler
-                                }
-                                onFieldFocusHandler={onFieldFocusHandler}
-                                onPanViaClick={onPanViaClick}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-              <SearchResults
-                currentSearchResults={currentSearchResults}
-                processClickedResultHandler={processClickedResultHandler}
-              />
-              <div className="rd-route-buttons">
-                <Grid container spacing={3}>
-                  <Grid item xs={6}>
-                    <Tooltip title="Zoom to the route">
-                      <span>
-                        <Button
-                          onClick={() => onZoomRouteClick()}
-                          aria-label="Zoom to the route"
-                          disabled={!isActiveRoute}
-                          component={isActiveRoute ? undefined : 'span'}
-                          variant="contained"
-                          color="default"
-                          classes={{
-                            root: 'rd-button-root',
-                            disabled: 'rd-button-disabled',
-                          }}
-                          startIcon={<ZoomInIcon fontSize="small" />}
-                        >
-                          <Typography>Zoom to the route</Typography>
-                        </Button>
-                      </span>
-                    </Tooltip>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Tooltip title="Route information">
-                      <span>
-                        <Button
-                          onClick={() =>
-                            isRouteInfoOpen
-                              ? dispatch(setIsRouteInfoOpen(false))
-                              : onDrawNewRoute(true).then(() => {
-                                  dispatch(setIsRouteInfoOpen(true));
-                                })
-                          }
-                          aria-label="Route information"
-                          disabled={!isActiveRoute}
-                          component={isActiveRoute ? undefined : 'span'}
-                          variant="contained"
-                          color="default"
-                          className={isRouteInfoOpen ? 'rd-button-active' : ''}
-                          classes={{
-                            root: 'rd-button-root',
-                            disabled: 'rd-button-disabled',
-                          }}
-                          startIcon={<InfoIcon fontSize="small" />}
-                        >
-                          <Typography>Route information</Typography>
-                        </Button>
-                      </span>
-                    </Tooltip>
-                  </Grid>
-                </Grid>
-              </div>
-              {isRouteInfoOpen && selectedRoutes.length ? (
-                <RouteInfosDialog
-                  closeInfo={() => dispatch(setIsRouteInfoOpen(false))}
-                  hoveredCoords={hoveredCoords}
-                  onHighlightPoint={onHighlightPoint}
-                  clearHighlightPoint={clearHighlightPoint}
-                  routes={selectedRoutes}
-                />
+              {mode === 'dev' && isDesktop ? (
+                <Tooltip title="Toggle YAML test snippet">
+                  <IconButton
+                    onClick={() => {
+                      dispatch(
+                        setYamlSnippetDialogOpen(!yamlSnippetDialogOpen),
+                      );
+                    }}
+                    color={yamlSnippetDialogOpen ? 'primary' : 'default'}
+                  >
+                    <BugReport />
+                  </IconButton>
+                </Tooltip>
               ) : null}
-            </TabPanel>
-            <button
-              className="rd-routing-menu-toggle-close"
-              type="button"
-              onClick={() => setMenuVisible(false)}
-            >
-              {isDesktop ? <ArrowLeftIcon /> : <ExpandLess />}
-            </button>
-          </Paper>
-        </Slide>
-        {!menuVisible && (
+              {motHasGeneralization(currentMot) && generalizationEnabled ? (
+                <Tooltip title="Toggle generalization">
+                  <FormControlLabel
+                    disabled={showLoadingBar}
+                    className={classes.checkbox}
+                    classes={{ label: classes.checkboxLabel }}
+                    variant="standard"
+                    control={
+                      <RdCheckbox
+                        checked={generalizationActive}
+                        onChange={() =>
+                          dispatch(
+                            setGeneralizationActive(!generalizationActive),
+                          )
+                        }
+                      />
+                    }
+                    label="Generalization"
+                  />
+                </Tooltip>
+              ) : null}
+            </div>
+          </div>
+          <TabPanel padding={10}>
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="droppable">
+                {(provided) => (
+                  <div
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    style={{
+                      background: 'white',
+                    }}
+                  >
+                    {currentStops.map((item, index) => (
+                      <Draggable
+                        // eslint-disable-next-line react/no-array-index-key
+                        key={`searchField-${index}`}
+                        draggableId={`searchField-${index}`}
+                        index={index}
+                      >
+                        {(prov, snpsht) => (
+                          <div
+                            ref={prov.innerRef}
+                            // eslint-disable-next-line react/jsx-props-no-spreading
+                            {...prov.draggableProps}
+                            // eslint-disable-next-line react/jsx-props-no-spreading
+                            {...prov.dragHandleProps}
+                            style={getItemStyle(
+                              snpsht.isDragging,
+                              prov.draggableProps.style,
+                            )}
+                          >
+                            <SearchField
+                              // eslint-disable-next-line react/no-array-index-key
+                              key={`searchField-${index}`}
+                              index={index}
+                              inputReference={elRefs.current[index]}
+                              addNewSearchFieldHandler={
+                                addNewSearchFieldHandler
+                              }
+                              currentStops={currentStops}
+                              currentMot={currentMot}
+                              removeSearchFieldHandler={
+                                removeSearchFieldHandler
+                              }
+                              searchStopsHandler={searchStopsHandler}
+                              singleStop={item}
+                              processHighlightedResultSelectHandler={
+                                processHighlightedResultSelectHandler
+                              }
+                              onFieldFocusHandler={onFieldFocusHandler}
+                              onPanViaClick={onPanViaClick}
+                            />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+            <SearchResults
+              currentSearchResults={currentSearchResults}
+              processClickedResultHandler={processClickedResultHandler}
+            />
+            <Grid container padding={3} style={{ paddingBottom: 10 }}>
+              <Grid item xs={6}>
+                <Tooltip title="Zoom to the route">
+                  <span>
+                    <Button
+                      onClick={() => onZoomRouteClick()}
+                      disabled={!isActiveRoute}
+                      startIcon={<ZoomIn fontSize="small" />}
+                    >
+                      Zoom to the route
+                    </Button>
+                  </span>
+                </Tooltip>
+              </Grid>
+              <Grid item xs={6}>
+                <Tooltip title="Route information">
+                  <span>
+                    <Button
+                      onClick={() =>
+                        isRouteInfoOpen
+                          ? dispatch(setIsRouteInfoOpen(false))
+                          : onDrawNewRoute(true).then(() => {
+                              dispatch(setIsRouteInfoOpen(true));
+                            })
+                      }
+                      disabled={!isActiveRoute}
+                      selected={isRouteInfoOpen}
+                      startIcon={<Info fontSize="small" />}
+                      variant={isRouteInfoOpen ? 'contained' : 'text'}
+                    >
+                      Route information
+                    </Button>
+                  </span>
+                </Tooltip>
+              </Grid>
+            </Grid>
+            {isRouteInfoOpen && selectedRoutes.length ? (
+              <RouteInfosDialog
+                closeInfo={() => dispatch(setIsRouteInfoOpen(false))}
+                hoveredCoords={hoveredCoords}
+                onHighlightPoint={onHighlightPoint}
+                clearHighlightPoint={clearHighlightPoint}
+                routes={selectedRoutes}
+              />
+            ) : null}
+          </TabPanel>
           <button
-            className="rd-routing-menu-toggle-open"
+            className="rd-routing-menu-toggle-close"
             type="button"
-            onClick={() => setMenuVisible(true)}
+            onClick={() => setMenuVisible(false)}
           >
-            {isDesktop ? <ArrowRightIcon /> : <ExpandMore />}
+            {isDesktop ? <ArrowLeft /> : <ExpandLess />}
           </button>
-        )}
-      </div>
-    </>
+        </Paper>
+      </Slide>
+      {!menuVisible && (
+        <button
+          className="rd-routing-menu-toggle-open"
+          type="button"
+          onClick={() => setMenuVisible(true)}
+        >
+          {isDesktop ? <ArrowRight /> : <ExpandMore />}
+        </button>
+      )}
+    </div>
   );
 }
 

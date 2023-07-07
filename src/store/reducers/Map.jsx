@@ -1,5 +1,5 @@
 import { Map } from 'ol';
-import LayerService from 'react-spatial/LayerService';
+import LayerService from '../../utils/LayerService';
 import * as actionTypes from '../actions/actionTypes';
 import { SEARCH_MODES, EUROPE_EXTENT } from '../../constants';
 
@@ -33,6 +33,20 @@ const initialState = {
   searchMode: SEARCH_MODES[0],
   tracks: [null, null],
   layerService: new LayerService([]),
+  generalizationEnabled: false,
+  generalizationGraph: null,
+  generalizationActive: false,
+  zoom: 6,
+  mode: undefined,
+  yamlSnippetDialogOpen: false,
+  isDesktop: true,
+};
+
+const setZoom = (state, action) => {
+  return {
+    ...state,
+    zoom: action.zoom,
+  };
 };
 
 const setCenter = (state, action) => {
@@ -224,8 +238,49 @@ const setMaxExtent = (state, action) => {
   };
 };
 
+const setGeneralizationEnabled = (state, action) => {
+  return {
+    ...state,
+    generalizationEnabled: action.generalizationEnabled,
+    generalizationActive: !action.generalizationEnabled
+      ? false
+      : state.generalizationActive,
+  };
+};
+
+const setGeneralizationGraph = (state, action) => {
+  return {
+    ...state,
+    generalizationGraph: action.generalizationGraph,
+  };
+};
+
+const setGeneralizationActive = (state, action) => {
+  return {
+    ...state,
+    generalizationActive: action.generalizationActive,
+  };
+};
+
+const setMode = (state, action) => {
+  return {
+    ...state,
+    mode: action.mode,
+  };
+};
+
+const setYamlSnippetDialogOpen = (state, action) => {
+  return {
+    ...state,
+    yamlSnippetDialogOpen: action.yamlSnippetDialogOpen,
+  };
+};
+
+// eslint-disable-next-line default-param-last
 const reducer = (state = initialState, action) => {
   switch (action.type) {
+    case actionTypes.SET_ZOOM:
+      return setZoom(state, action);
     case actionTypes.SET_CENTER:
       return setCenter(state, action);
     case actionTypes.SET_ACTIVE_FLOOR:
@@ -262,6 +317,16 @@ const reducer = (state = initialState, action) => {
       return setTracks(state, action);
     case actionTypes.SET_MAX_EXTENT:
       return setMaxExtent(state, action);
+    case actionTypes.SET_GENERALIZATION_ENABLED:
+      return setGeneralizationEnabled(state, action);
+    case actionTypes.SET_GENERALIZATION_GRAPH:
+      return setGeneralizationGraph(state, action);
+    case actionTypes.SET_GENERALIZATION_ACTIVE:
+      return setGeneralizationActive(state, action);
+    case actionTypes.SET_MODE:
+      return setMode(state, action);
+    case actionTypes.SET_DEBUG_DIALOG_OPEN:
+      return setYamlSnippetDialogOpen(state, action);
     default:
       return state;
   }

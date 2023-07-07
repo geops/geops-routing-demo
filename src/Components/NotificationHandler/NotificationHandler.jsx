@@ -1,7 +1,7 @@
 import React from 'react';
-import Snackbar from '@material-ui/core/Snackbar';
+import Snackbar from '@mui/material/Snackbar';
 import { connect } from 'react-redux';
-import Alert from '@material-ui/lab/Alert';
+import { Alert } from '@mui/material';
 import PropTypes from 'prop-types';
 import { showNotification } from '../../store/actions';
 
@@ -97,14 +97,14 @@ class NotificationHandler extends React.Component {
   }
 }
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch) => {
   return {
     onShowNotification: (notificationMessage, notificationType) =>
       dispatch(showNotification(notificationMessage, notificationType)),
   };
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
   return {
     notificationMessage: state.MapReducer.notificationMessage,
     notificationType: state.MapReducer.notificationType,
