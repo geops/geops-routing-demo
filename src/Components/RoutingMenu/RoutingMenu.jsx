@@ -18,19 +18,19 @@ import {
   Tooltip,
   Typography,
   useMediaQuery,
-  makeStyles,
-  withStyles,
-} from '@material-ui/core';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
-import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import ZoomInIcon from '@material-ui/icons/ZoomIn';
-import InfoIcon from '@material-ui/icons/Info';
-import BugReportIcon from '@material-ui/icons/BugReport';
+} from '@mui/material';
+import { makeStyles, withStyles } from '@mui/styles';
+import {
+  ArrowLeft,
+  ArrowRight,
+  ZoomIn,
+  Info,
+  BugReport,
+  ExpandMore,
+  ExpandLess,
+} from '@mui/icons-material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import PropTypes from 'prop-types';
-import nextId from 'react-id-generator';
 
 import {
   setTracks,
@@ -73,8 +73,7 @@ function TabPanel(props) {
       component="div"
       role="tabpanel"
       hidden={value !== index}
-      id={nextId()}
-      style={{ paddingBottom: '20px' }}
+      style={{ paddingTop: '10px', paddingBottom: '10px' }}
       aria-labelledby={`simple-tab-${index}`}
     >
       {value === index && children}
@@ -143,8 +142,15 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: 'white',
   },
   select: {
-    height: '100%',
+    height: '80%',
     textAlign: 'center',
+
+    '& fieldset': {
+      border: 'none',
+    },
+  },
+  selectRoot: {
+    paddingLeft: '0px !important',
   },
   selectInput: {
     backgroundColor: 'white',
@@ -650,10 +656,13 @@ function RoutingMenu({
                   <Select
                     renderValue={(val) => (val !== '' ? val : 'Other MOTs')}
                     className={classes.select}
-                    classes={{ root: classes.selectInput }}
+                    classes={{
+                      select: classes.selectRoot,
+                      nativeInput: classes.selectInput,
+                    }}
+                    variant="standard"
                     labelId="rd-other-mot-label"
                     value={currentOtherMot || ''}
-                    disableUnderline={!currentOtherMot}
                     displayEmpty
                     onChange={changeCurrentOtherMot}
                     disabled={showLoadingBar}
@@ -676,10 +685,13 @@ function RoutingMenu({
                   <Select
                     renderValue={(val) => val}
                     className={classes.select}
-                    classes={{ root: classes.selectInput }}
+                    classes={{
+                      select: classes.selectRoot,
+                      nativeInput: classes.selectInput,
+                    }}
                     labelId="rd-other-mot-label"
+                    variant="standard"
                     value={searchMode}
-                    disableUnderline
                     onChange={(evt) =>
                       dispatch(setSearchMode(evt.target.value))
                     }
@@ -704,7 +716,7 @@ function RoutingMenu({
                     }}
                     color={yamlSnippetDialogOpen ? 'primary' : 'default'}
                   >
-                    <BugReportIcon />
+                    <BugReport />
                   </IconButton>
                 </Tooltip>
               ) : null}
@@ -714,6 +726,7 @@ function RoutingMenu({
                     disabled={showLoadingBar}
                     className={classes.checkbox}
                     classes={{ label: classes.checkboxLabel }}
+                    variant="standard"
                     control={
                       <RdCheckbox
                         checked={generalizationActive}
@@ -730,12 +743,11 @@ function RoutingMenu({
               ) : null}
             </div>
           </div>
-          <TabPanel>
+          <TabPanel padding={10}>
             <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="droppable">
                 {(provided) => (
                   <div
-                    className="stopsContainer"
                     // eslint-disable-next-line react/jsx-props-no-spreading
                     {...provided.droppableProps}
                     ref={provided.innerRef}
@@ -796,59 +808,42 @@ function RoutingMenu({
               currentSearchResults={currentSearchResults}
               processClickedResultHandler={processClickedResultHandler}
             />
-            <div className="rd-route-buttons">
-              <Grid container spacing={3}>
-                <Grid item xs={6}>
-                  <Tooltip title="Zoom to the route">
-                    <span>
-                      <Button
-                        onClick={() => onZoomRouteClick()}
-                        aria-label="Zoom to the route"
-                        disabled={!isActiveRoute}
-                        component={isActiveRoute ? undefined : 'span'}
-                        variant="contained"
-                        color="default"
-                        classes={{
-                          root: 'rd-button-root',
-                          disabled: 'rd-button-disabled',
-                        }}
-                        startIcon={<ZoomInIcon fontSize="small" />}
-                      >
-                        <Typography>Zoom to the route</Typography>
-                      </Button>
-                    </span>
-                  </Tooltip>
-                </Grid>
-                <Grid item xs={6}>
-                  <Tooltip title="Route information">
-                    <span>
-                      <Button
-                        onClick={() =>
-                          isRouteInfoOpen
-                            ? dispatch(setIsRouteInfoOpen(false))
-                            : onDrawNewRoute(true).then(() => {
-                                dispatch(setIsRouteInfoOpen(true));
-                              })
-                        }
-                        aria-label="Route information"
-                        disabled={!isActiveRoute}
-                        component={isActiveRoute ? undefined : 'span'}
-                        variant="contained"
-                        color="default"
-                        className={isRouteInfoOpen ? 'rd-button-active' : ''}
-                        classes={{
-                          root: 'rd-button-root',
-                          disabled: 'rd-button-disabled',
-                        }}
-                        startIcon={<InfoIcon fontSize="small" />}
-                      >
-                        <Typography>Route information</Typography>
-                      </Button>
-                    </span>
-                  </Tooltip>
-                </Grid>
+            <Grid container padding={3} style={{ paddingBottom: 10 }}>
+              <Grid item xs={6}>
+                <Tooltip title="Zoom to the route">
+                  <span>
+                    <Button
+                      onClick={() => onZoomRouteClick()}
+                      disabled={!isActiveRoute}
+                      startIcon={<ZoomIn fontSize="small" />}
+                    >
+                      Zoom to the route
+                    </Button>
+                  </span>
+                </Tooltip>
               </Grid>
-            </div>
+              <Grid item xs={6}>
+                <Tooltip title="Route information">
+                  <span>
+                    <Button
+                      onClick={() =>
+                        isRouteInfoOpen
+                          ? dispatch(setIsRouteInfoOpen(false))
+                          : onDrawNewRoute(true).then(() => {
+                              dispatch(setIsRouteInfoOpen(true));
+                            })
+                      }
+                      disabled={!isActiveRoute}
+                      selected={isRouteInfoOpen}
+                      startIcon={<Info fontSize="small" />}
+                      variant={isRouteInfoOpen ? 'contained' : 'text'}
+                    >
+                      Route information
+                    </Button>
+                  </span>
+                </Tooltip>
+              </Grid>
+            </Grid>
             {isRouteInfoOpen && selectedRoutes.length ? (
               <RouteInfosDialog
                 closeInfo={() => dispatch(setIsRouteInfoOpen(false))}
@@ -864,7 +859,7 @@ function RoutingMenu({
             type="button"
             onClick={() => setMenuVisible(false)}
           >
-            {isDesktop ? <ArrowLeftIcon /> : <ExpandLess />}
+            {isDesktop ? <ArrowLeft /> : <ExpandLess />}
           </button>
         </Paper>
       </Slide>
@@ -874,7 +869,7 @@ function RoutingMenu({
           type="button"
           onClick={() => setMenuVisible(true)}
         >
-          {isDesktop ? <ArrowRightIcon /> : <ExpandMore />}
+          {isDesktop ? <ArrowRight /> : <ExpandMore />}
         </button>
       )}
     </div>
