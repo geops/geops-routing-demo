@@ -2,7 +2,7 @@ import { transform } from 'ol/proj';
 
 export const to4326 = (coord, decimal = 5) => {
   return transform(coord, 'EPSG:3857', 'EPSG:4326').map((c) =>
-    c.toFixed(decimal),
+    parseFloat(c.toFixed(decimal)),
   );
 };
 

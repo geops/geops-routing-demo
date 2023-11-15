@@ -5,7 +5,7 @@ import BasicMap from 'react-spatial/components/BasicMap';
 import { Map, Feature } from 'ol';
 import { containsExtent } from 'ol/extent';
 import { Vector as VectorLayer } from 'ol/layer';
-import { MultiLineString, Point } from 'ol/geom';
+import { Point } from 'ol/geom';
 import GeoJSON from 'ol/format/GeoJSON';
 import { Vector as VectorSource } from 'ol/source';
 import { unByKey } from 'ol/Observable';
@@ -34,8 +34,8 @@ import {
   propTypeCurrentStopsGeoJSON,
 } from '../../store/prop-types';
 import { FLOOR_LEVELS, DACH_EXTENT, EUROPE_EXTENT } from '../../constants';
-import './MapComponent.scss';
 import * as actions from '../../store/actions';
+import './MapComponent.scss';
 
 /**
  * The map props
@@ -215,7 +215,6 @@ class MapComponent extends PureComponent {
     });
 
     modify.on('modifyend', (evt) => {
-      const { features } = this.initialRouteDrag;
       const {
         tracks,
         floorInfo,
@@ -227,64 +226,61 @@ class MapComponent extends PureComponent {
         dispatchSetCurrentStopsGeoJSON,
       } = this.props;
       let newHopIdx = -1;
-
-      // A segment is a linestring between to hops (also called via points).
-      // It's used to determine where to add the new hop.
-      let segments = features;
-
-      let currHop = null;
-      let multiLineString = null;
+      const { features } = this.initialRouteDrag;
       const { currentMot } = this.props;
 
       // In the case of the foot routing we can receive multiple line string between 2 hops (ex: one line string pro floor).
-      // So we have to re create the segment between 2 hops to be able to find the segment where to add the new hop.
+      // So we have to recreate the segment between 2 hops to be able to find the segment where to add the new hop.
       if (currentMot === 'foot') {
-        segments = [];
-        for (let i = 0; i < features.length; i += 1) {
-          const feature = features[i];
-          let hop = null;
-          if (feature.get('src')) {
-            hop = `${feature.get('src').join()}-${feature.get('trg').join()}`;
-          }
-          const clone = feature.getGeometry().clone();
-          if (currHop === hop || !hop) {
-            multiLineString.appendLineString(clone);
-          } else {
-            currHop = hop;
-            multiLineString = new MultiLineString(clone);
-            segments.push(new Feature(multiLineString));
-          }
-        }
-      }
-
-      const flatCoords = segments
-        .map((f) => f.getGeometry())
-        .map((geom) => {
-          return [...geom.getFirstCoordinate(), ...geom.getLastCoordinate()];
-        });
-
-      const multiLineSource = new VectorSource({
-        features: segments,
-      });
-      const closestSegment = multiLineSource
-        .getClosestFeatureToCoordinate(this.initialRouteDrag.coordinate)
-        .getGeometry();
-
-      const closestEdges = [
-        ...closestSegment.getFirstCoordinate(),
-        ...closestSegment.getLastCoordinate(),
-      ];
-
-      flatCoords.forEach((segment, idx) => {
-        if (
-          segment.length === closestEdges.length &&
-          segment.every((value, index) => {
-            return value === closestEdges[index];
+        // foot routing segments contain the start and end hop coordinates, we use them to find the hop index
+        const closestSegmentStartCoord = features[0].get('src');
+        const hop = this.markerVectorSource
+          .getFeatures()
+          .sort((a, b) => {
+            return a.get('idx') - b.get('idx');
           })
-        ) {
-          newHopIdx = idx + 1;
+          .findIndex((f) => {
+            return (
+              to4326(f.getGeometry().getCoordinates()).join() ===
+              [
+                parseFloat(closestSegmentStartCoord[0].toFixed(5)),
+                parseFloat(closestSegmentStartCoord[1].toFixed(5)),
+              ].join()
+            );
+          });
+        if (hop >= 0) {
+          newHopIdx = hop + 1;
         }
-      });
+      } else {
+        const flatCoords = features
+          .map((f) => f.getGeometry())
+          .map((geom) => {
+            return [...geom.getFirstCoordinate(), ...geom.getLastCoordinate()];
+          });
+
+        const multiLineSource = new VectorSource({
+          features,
+        });
+        const closestSegment = multiLineSource
+          .getClosestFeatureToCoordinate(this.initialRouteDrag.coordinate)
+          .getGeometry();
+
+        const closestEdges = [
+          ...closestSegment.getFirstCoordinate(),
+          ...closestSegment.getLastCoordinate(),
+        ];
+
+        flatCoords.forEach((segment, idx) => {
+          if (
+            segment.length === closestEdges.length &&
+            segment.every((value, index) => {
+              return value === closestEdges[index];
+            })
+          ) {
+            newHopIdx = idx + 1;
+          }
+        });
+      }
 
       if (newHopIdx >= 0) {
         tracks.splice(newHopIdx, 0, '');
@@ -414,7 +410,14 @@ class MapComponent extends PureComponent {
         if (!val) {
           return;
         }
-        this.markerVectorSource.addFeatures(this.format.readFeatures(val));
+        const features = this.format.readFeatures(val);
+        this.markerVectorSource.addFeatures(
+          features.map((f) => {
+            // We add the index when recreating the via array so we can find the index of the hop when drag-modifying
+            f.set('idx', this.getHopIndex(f));
+            return f;
+          }),
+        );
         if (currentMot === 'foot') {
           this.markerVectorSource.getFeatures().forEach((feature, idx) => {
             feature.setStyle(
@@ -500,6 +503,14 @@ class MapComponent extends PureComponent {
         ? 'pointer'
         : 'inherit';
     }
+  }
+
+  getHopIndex(markerFeature) {
+    const { currentStops } = this.props;
+    return currentStops.findIndex((element) => {
+      const props = markerFeature.getProperties();
+      return element.toString() === (props.name ? props.name : props.id);
+    });
   }
 
   setIsActiveRoute(isActiveRoute) {
