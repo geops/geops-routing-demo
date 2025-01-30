@@ -85,7 +85,7 @@ function App(props) {
     (state) => state.MapReducer.generalizationEnabled,
   );
 
-  const handleKeyboarEvent = useCallback(
+  const handleKeyboardEvent = useCallback(
     (evt) => {
       const preventBroweserDefaults = () => {
         evt.stopPropagation();
@@ -111,9 +111,9 @@ function App(props) {
   );
 
   useEffect(() => {
-    document.addEventListener('keydown', handleKeyboarEvent);
-    return () => document.removeEventListener('keydown', handleKeyboarEvent);
-  }, [handleKeyboarEvent]);
+    document.addEventListener('keydown', handleKeyboardEvent);
+    return () => document.removeEventListener('keydown', handleKeyboardEvent);
+  }, [handleKeyboardEvent]);
 
   return (
     <ThemeProvider theme={theme}>

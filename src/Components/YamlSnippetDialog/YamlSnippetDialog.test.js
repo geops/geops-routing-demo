@@ -59,7 +59,7 @@ describe('YamlSnippetDialog', () => {
       '    - 7.59589,47.54508',
     );
     expect(getByTestId('expected-viastring-1').innerHTML).toBe(
-      '    - 7.60670,47.54596',
+      '    - 7.6067,47.54596',
     );
     expect(getByTestId('expected-viastring-2').innerHTML).toBe(
       '    - 7.61551,47.54955',

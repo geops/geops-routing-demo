@@ -32,11 +32,6 @@ const useStyles = makeStyles(() => {
       left: 710,
       top: 10,
     },
-    closeBtn: {
-      position: 'absolute',
-      right: 5,
-      top: 5,
-    },
     content: {
       padding: 20,
       minHeight: 195,
@@ -155,7 +150,7 @@ function YamlSnippetDialog() {
       <Paper elevation={3} square>
         <Tooltip title="Close">
           <IconButton
-            className={classes.closeBtn}
+            sx={{ position: 'absolute', right: 5, top: 5 }}
             size="small"
             onClick={() => dispatch(setYamlSnippetDialogOpen(false))}
           >
