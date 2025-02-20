@@ -203,7 +203,7 @@ const validateMots = (motsArray, validationMots) => {
 // Currently no 'coach' mot available for stop finder.
 const handleStopFinderMot = (mot) => {
   if (mot === 'coach') return 'bus';
-  if (mot === 'foot' || mot === 'car') return '';
+  if (mot === 'foot') return '';
   return mot;
 };
 
