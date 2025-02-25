@@ -529,7 +529,7 @@ class MapComponent extends PureComponent {
       activeFloor,
       style,
     } = this.props;
-    console.log(style);
+
     this.dataLayer = new MaplibreLayer({
       name: 'data',
       visible: true,
