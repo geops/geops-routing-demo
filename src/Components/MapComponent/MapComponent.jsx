@@ -369,6 +369,7 @@ class MapComponent extends PureComponent {
       generalizationActive,
       generalizationEnabled,
       zoom,
+      style,
     } = this.props;
     const currentMotChanged = currentMot && currentMot !== prevProps.currentMot;
     const tracksChanged = tracks !== prevProps.tracks;
@@ -385,7 +386,9 @@ class MapComponent extends PureComponent {
       generalizationActive !== prevProps.generalizationActive ||
       generalizationEnabled !== prevProps.generalizationEnabled;
 
-    if (generalizationStateChanged) {
+    const styleChanged = style !== prevProps.style;
+
+    if (generalizationStateChanged || styleChanged) {
       this.loadBaseLayers();
     }
 
@@ -524,12 +527,13 @@ class MapComponent extends PureComponent {
       generalizationEnabled,
       layerService,
       activeFloor,
+      style,
     } = this.props;
-
+    console.log(style);
     this.dataLayer = new MaplibreLayer({
       name: 'data',
       visible: true,
-      url: `https://maps.geops.io/styles/travic_v2${
+      url: `https://maps.geops.io/styles/${style || 'travic_v2'}${
         generalizationEnabled && generalizationActive ? '_generalized' : ''
       }/style.json?key=${APIKey}`,
     });
@@ -912,6 +916,7 @@ const mapStateToProps = (state) => {
     generalizationActive: state.MapReducer.generalizationActive,
     yamlSnippetDialogOpen: state.MapReducer.yamlSnippetDialogOpen,
     mode: state.MapReducer.mode,
+    style: state.MapReducer.style,
   };
 };
 
@@ -988,6 +993,7 @@ MapComponent.propTypes = {
   generalizationGraph: PropTypes.string,
   yamlSnippetDialogOpen: PropTypes.bool,
   mode: PropTypes.string,
+  style: PropTypes.string,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MapComponent);

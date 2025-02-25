@@ -16,6 +16,7 @@ import {
   setGeneralizationActive,
   setTracks,
   setMode,
+  setStyle,
 } from '../../store/actions/Map';
 
 const abortController = new AbortController();
@@ -144,6 +145,11 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
       const generalizationActiveParam = urlSearch.get('generalizationActive');
       const graphParam = urlSearch.get('graph');
       const modeParam = urlSearch.get('mode');
+      const styleParam = urlSearch.get('style');
+
+      if (styleParam) {
+        dispatch(setStyle(styleParam));
+      }
 
       if (zParam && !isNaN(parseFloat(zParam))) {
         // Set zoom if defined

@@ -276,6 +276,13 @@ const setYamlSnippetDialogOpen = (state, action) => {
   };
 };
 
+const setStyle = (state, action) => {
+  return {
+    ...state,
+    style: action.style,
+  };
+};
+
 // eslint-disable-next-line default-param-last
 const reducer = (state = initialState, action) => {
   switch (action.type) {
@@ -327,6 +334,8 @@ const reducer = (state = initialState, action) => {
       return setMode(state, action);
     case actionTypes.SET_DEBUG_DIALOG_OPEN:
       return setYamlSnippetDialogOpen(state, action);
+    case actionTypes.SET_STYLE:
+      return setStyle(state, action);
     default:
       return state;
   }

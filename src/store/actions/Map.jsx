@@ -148,6 +148,13 @@ export const setGeneralizationGraph = (generalizationGraph) => {
   };
 };
 
+export const setStyle = (style) => {
+  return {
+    type: actionTypes.SET_STYLE,
+    style,
+  };
+};
+
 export const setGeneralizationActive = (generalizationActive) => {
   return {
     type: actionTypes.SET_GENERALIZATION_ACTIVE,

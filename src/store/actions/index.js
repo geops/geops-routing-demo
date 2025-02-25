@@ -20,4 +20,7 @@ export {
   setGeneralizationEnabled,
   setGeneralizationGraph,
   setGeneralizationActive,
+  setStyle,
+  setMode,
+  setResolveHops,
 } from './Map';
