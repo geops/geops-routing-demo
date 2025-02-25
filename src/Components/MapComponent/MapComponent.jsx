@@ -952,7 +952,7 @@ MapComponent.defaultProps = {
   generalizationGraph: null,
   yamlSnippetDialogOpen: false,
   mode: null,
-  sytle: 'travic_v2',
+  style: 'travic_v2',
 };
 
 MapComponent.propTypes = {
