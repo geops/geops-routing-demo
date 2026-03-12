@@ -13,19 +13,19 @@ const propTypes = {
   children: PropTypes.any,
 };
 
-const defaultProps = {
-  children: null,
-  active: false,
-  isMobile: false,
-};
-
 function getFloorStyle(active, floor) {
   return active
     ? { backgroundColor: floorsColor[floor === '2D' ? '0' : floor] }
     : null;
 }
 
-function FloorButton({ floor, onClick, active, children, isMobile }) {
+function FloorButton({
+  floor,
+  onClick,
+  active = false,
+  children = null,
+  isMobile = false,
+}) {
   const mobileInfo = isMobile && (
     <div className="tm-mobile-floor-info">Floor</div>
   );
@@ -47,6 +47,5 @@ function FloorButton({ floor, onClick, active, children, isMobile }) {
 }
 
 FloorButton.propTypes = propTypes;
-FloorButton.defaultProps = defaultProps;
 
 export default React.memo(FloorButton);

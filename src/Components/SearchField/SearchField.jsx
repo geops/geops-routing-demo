@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { makeStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
@@ -19,42 +18,27 @@ import { propTypeCurrentStops } from '../../store/prop-types';
 import { to4326 } from '../../utils';
 import { setIsFieldFocused, setIsRouteInfoOpen } from '../../store/actions/Map';
 
-const useStyles = makeStyles(() => ({
-  button: {
-    color: 'black',
-    '& svg': {
-      height: '20px',
-      width: '20px',
-    },
-  },
-  buttonIcon: {
-    color: 'gray !important',
-  },
-}));
-
 /**
  * The component that displays the search field(s)
  * @category RoutingMenu
  */
-function SearchField(props) {
-  const classes = useStyles();
+function SearchField({
+  index,
+  addNewSearchFieldHandler,
+  currentStops = [],
+  currentMot,
+  removeSearchFieldHandler,
+  searchStopsHandler,
+  singleStop = '',
+  processHighlightedResultSelectHandler,
+  onFieldFocusHandler,
+  onPanViaClick,
+  inputReference,
+}) {
   const dispatch = useDispatch();
   const showLoadingBar = useSelector(
     (state) => state.MapReducer.showLoadingBar,
   );
-  const {
-    index,
-    addNewSearchFieldHandler,
-    currentStops,
-    currentMot,
-    removeSearchFieldHandler,
-    searchStopsHandler,
-    singleStop,
-    processHighlightedResultSelectHandler,
-    onFieldFocusHandler,
-    onPanViaClick,
-    inputReference,
-  } = props;
   let fieldLeftIcon = null;
   let searchFieldLabel = '';
 
@@ -88,12 +72,7 @@ function SearchField(props) {
       <Grid item xs={1} textAlign="right" style={{ minWidth: 35 }}>
         <Tooltip title="Change order of the via points">
           <span>
-            <IconButton
-              className={classes.button}
-              aria-label="dragHop"
-              size="small"
-              disabled
-            >
+            <IconButton aria-label="dragHop" size="small" disabled>
               <DragIndicatorIcon fontSize="small" />
             </IconButton>
           </span>
@@ -109,7 +88,6 @@ function SearchField(props) {
           <span>
             <IconButton
               onClick={() => onPanViaClick(singleStop, index)}
-              className={classes.button}
               size="small"
             >
               {fieldLeftIcon}
@@ -169,15 +147,11 @@ function SearchField(props) {
                 onClick={() =>
                   addNewSearchFieldHandler(currentStops, index + 1)
                 }
-                className={classes.button}
                 aria-label="Add Via Point"
                 size="small"
                 disabled={addNextHopDisabled || showLoadingBar}
               >
-                <AddCircleOutlineIcon
-                  fontSize="small"
-                  className={classes.buttonIcon}
-                />
+                <AddCircleOutlineIcon fontSize="small" />
               </IconButton>
             </span>
           </Tooltip>
@@ -194,15 +168,11 @@ function SearchField(props) {
             <span>
               <IconButton
                 onClick={() => removeSearchFieldHandler(index)}
-                className={classes.button}
                 aria-label="removeHop"
                 size="small"
                 disabled={showLoadingBar}
               >
-                <RemoveCircleOutlineIcon
-                  fontSize="small"
-                  className={classes.buttonIcon}
-                />
+                <RemoveCircleOutlineIcon fontSize="small" />
               </IconButton>
             </span>
           </Tooltip>
@@ -230,11 +200,6 @@ SearchField.propTypes = {
     PropTypes.func,
     PropTypes.shape({ current: PropTypes.instanceOf(Element) }),
   ]).isRequired,
-};
-
-SearchField.defaultProps = {
-  currentStops: [],
-  singleStop: '',
 };
 
 export default SearchField;

@@ -1,5 +1,4 @@
 import { Map } from 'ol';
-import LayerService from '../../utils/LayerService';
 import * as actionTypes from '../actions/actionTypes';
 import { SEARCH_MODES, EUROPE_EXTENT } from '../../constants';
 
@@ -32,7 +31,6 @@ const initialState = {
   resolveHops: false,
   searchMode: SEARCH_MODES[0],
   tracks: [null, null],
-  layerService: new LayerService([]),
   generalizationEnabled: false,
   generalizationGraph: null,
   generalizationActive: false,

@@ -1,5 +1,4 @@
-/* eslint-disable no-param-reassign */
-import MapboxStyleLayer from '../MapboxStyleLayer';
+import { MaplibreStyleLayer as MTMapboxStyleLayer } from 'mobility-toolbox-js/ol';
 
 // Caching filters to reset to the original when toggle off the layer.
 const filterCacheByMbStyle = {};
@@ -12,7 +11,7 @@ const filterCacheByMbStyle = {};
  * @inheritdoc
  * @private
  */
-class LevelLayer extends MapboxStyleLayer {
+class LevelLayer extends MTMapboxStyleLayer {
   constructor(options = {}) {
     super(options);
     this.level = options.level;

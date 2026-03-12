@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
@@ -20,10 +21,11 @@ describe('Search Results', () => {
           },
         },
       ],
-      processClickedResultHandler: jest.fn(),
+      processClickedResultHandler: vi.fn(),
     };
 
     const target = document.createElement('div');
+
     const map = new Map({
       target,
       view: new View({}),
@@ -41,10 +43,11 @@ describe('Search Results', () => {
           currentSearchResults={props.currentSearchResults}
           processClickedResultHandler={props.processClickedResultHandler}
         />
-        ,
       </Provider>,
     );
+
     const navItem = container.querySelector('.MuiListItemText-primary');
+
     expect(navItem.textContent).toEqual(
       props.currentSearchResults[0].properties.name,
     );

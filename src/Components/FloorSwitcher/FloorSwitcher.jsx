@@ -200,6 +200,5 @@ const mapDispatchToProps = {
 };
 
 FloorSwitcher.propTypes = propTypes;
-// FloorSwitcher.defaultProps = defaultProps;
 
 export default connect(mapStateToProps, mapDispatchToProps)(FloorSwitcher);

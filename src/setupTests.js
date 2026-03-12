@@ -1,38 +1,57 @@
-// jest-dom adds custom jest matchers for asserting on DOM nodes.
-// allows you to do things like:
-// expect(element).toHaveTextContent(/react/i)
-// learn more: https://github.com/testing-library/jest-dom
-// eslint-disable-next-line import/no-extraneous-dependencies
-import '@testing-library/jest-dom/extend-expect';
-import { CanvasPattern } from 'canvas';
-
-/* eslint-disable import/no-extraneous-dependencies */
-// jest-dom adds custom jest matchers for asserting on DOM nodes.
-// allows you to do things like:
-// expect(element).toHaveTextContent(/react/i)
-// learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom';
+/* eslint-disable class-methods-use-this */
+/* eslint-disable max-classes-per-file */
+import { vi } from 'vitest';
 import crypto from 'crypto';
-
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 
-global.URL.createObjectURL = jest.fn(() => 'fooblob');
+// Assign CanvasPattern to global
+import { CanvasPattern } from 'canvas';
 
+// -------------------
+// Mock 'canvas' module
+// -------------------
+vi.mock('canvas', async () => {
+  const original = await vi.importActual('canvas').catch(() => ({}));
+  return {
+    ...original,
+    createCanvas: () => ({}),
+    loadImage: async () => ({}),
+    CanvasRenderingContext2D: class {},
+    CanvasPattern: class {},
+  };
+});
 global.CanvasPattern = CanvasPattern;
-global.URL.createObjectURL = jest.fn(() => 'fooblob');
 
+// -------------------
+// Mock URL.createObjectURL
+// -------------------
+global.URL.createObjectURL = vi.fn(() => 'fooblob');
+
+// -------------------
+// Redux mock store
+// -------------------
 global.mockStore = configureStore([thunk]);
-global.crypto = {
-  getRandomValues: (arr) => crypto.randomBytes(arr.length),
-};
 
-/* eslint-disable */
-global.ResizeObserver = class ResizeObserver {
-  constructor(onResize) {
-    ResizeObserver.onResize = onResize;
-  }
+// -------------------
+// Crypto mock (safe for JSDOM)
+// -------------------
+if (typeof global.crypto === 'undefined') {
+  global.crypto = {};
+}
+
+Object.defineProperty(global.crypto, 'getRandomValues', {
+  value: (arr) => crypto.randomBytes(arr.length),
+  writable: false,
+});
+
+// -------------------
+// ResizeObserver mock
+// -------------------
+global.ResizeObserver = class {
   observe() {}
+
   unobserve() {}
+
   disconnect() {}
 };
