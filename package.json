@@ -67,7 +67,7 @@
     "prepare": "is-ci || husky install",
     "start": "ESLINT_NO_DEV_ERRORS=true  react-scripts start",
     "test": "react-scripts test --env=jsdom --transformIgnorePatterns \"/node_modules/(?!(@geops/react-ui|jsts|ol|ol-mapbox-style|ole|filter-obj|react-spatial|mobility-toolbox-js|quick-lru|split-on-first|query-string|decode-uri-component)/).*/\"",
-    "up": "yarn upgrade-interactive --latest"
+    "up": "pnpm upgrade-interactive --latest"
   },
   "browserslist": [
     ">0.2%",
@@ -136,12 +136,12 @@
   "license": "MIT",
   "lint-staged": {
     "src/lang/*.json": [
-      "yarn sort"
+      "pnpm sort"
     ],
     "(src|__mocks__)/**/*.js": [
       "eslint --fix",
       "prettier --write",
-      "yarn test --bail --findRelatedTests"
+      "pnpm test --bail --findRelatedTests"
     ],
     "package.json": [
       "fixpack --sortToTop name --sortToTop description --sortToTop main --sortToTop version --sortToTop private --sortToTop homepage --sortToTop dependencies --sortToTop peerDependencies --sortToTop devDependencies --sortToTop scripts"
@@ -187,5 +187,5 @@
       ]
     }
   },
-  "packageManager": "yarn@1.22.22+sha256.c17d3797fb9a9115bf375e31bfd30058cac6bc9c3b8807a3d8cb2094794b51ca"
+  "packageManager": "pnpm@10.28.2+sha256.afa99b0b4b3d11c1dad2b472f9318ae2c78673829749ded527f89f09071479a7"
 }
