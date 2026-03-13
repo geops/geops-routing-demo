@@ -6,7 +6,8 @@ import Copyright from 'react-spatial/components/Copyright';
 import { Box, Snackbar } from '@mui/material';
 import { Map, Feature } from 'ol';
 import { containsExtent } from 'ol/extent';
-import { Vector as VectorLayer, Layer } from 'ol/layer';
+import { Vector as VectorLayer, Layer, Group } from 'ol/layer';
+
 import { Point } from 'ol/geom';
 import GeoJSON from 'ol/format/GeoJSON';
 import { Vector as VectorSource } from 'ol/source';
@@ -17,11 +18,11 @@ import {
 } from 'ol/interaction';
 import PropTypes from 'prop-types';
 import { touchOnly } from 'ol/events/condition';
+import LevelLayer from '../../layers/LevelLayer';
 import MapFloorSwitcher from '../MapFloorSwitcher';
 import RoutingMenu from '../RoutingMenu';
 import FloorSwitcher from '../FloorSwitcher';
 import YamlSnippetDialog from '../YamlSnippetDialog';
-import LevelLayer from '../../layers/LevelLayer';
 import { getGeneralization, graphs, to4326 } from '../../utils';
 import getViaStrings from '../../utils/getViaStrings';
 import {
@@ -33,7 +34,7 @@ import {
   propTypeCurrentStops,
   propTypeCurrentStopsGeoJSON,
 } from '../../store/prop-types';
-import { FLOOR_LEVELS, DACH_EXTENT, EUROPE_EXTENT } from '../../constants';
+import { DACH_EXTENT, EUROPE_EXTENT } from '../../constants';
 import * as actions from '../../store/actions';
 import 'ol/ol.css';
 
@@ -41,7 +42,6 @@ import 'ol/ol.css';
  * The map props
  * @typedef MapComponentProps
  * @type {props}
- * @property {string} APIKey key obtained from geOps that enables you to used the previous API services.
  * @property {string} routingUrl The API routing url to be used for navigation.
  * @property {string} currentMot The current selected mot by user, example 'bus'.
  * @property {Object} currentStopsGeoJSON The current stops defined by user in geojson format inside a dictionary, key is the stop index(order) and the value is the geoJSON itself.
@@ -64,7 +64,8 @@ class MapComponent extends PureComponent {
    */
   constructor(props) {
     super(props);
-    const { dispatchSetClickLocation, olMap } = this.props;
+    const { dispatchSetClickLocation, olMap, routingLayer, markerLayer } =
+      this.props;
     this.map = olMap;
     this.hoveredRoute = null;
     this.initialRouteDrag = null;
@@ -83,52 +84,18 @@ class MapComponent extends PureComponent {
       dataProjection: 'EPSG:4326',
       featureProjection: 'EPSG:3857',
     });
-
-    // Define route vectorLayer.
-    this.routeVectorSource = new VectorSource({
-      features: [],
+    this.routeVectorSource = routingLayer.getSource();
+    this.markerVectorSource = markerLayer.getSource();
+    routingLayer.setStyle((feature) => {
+      const { currentMot, activeFloor } = this.props;
+      return lineStyleFunction(
+        currentMot,
+        this.hoveredRoute === feature,
+        feature.get('floor'),
+        activeFloor,
+        feature.get('graph'),
+      );
     });
-    this.routeVectorLayer = new VectorLayer({
-      key: 'routeLayer',
-      name: 'routeLayer',
-      zIndex: 1,
-      source: this.routeVectorSource,
-      style: (feature) => {
-        const { currentMot, activeFloor: activeFloorr } = this.props;
-
-        return lineStyleFunction(
-          currentMot,
-          this.hoveredRoute === feature,
-          feature.get('floor'),
-          activeFloorr,
-          feature.get('graph'),
-        );
-      },
-    });
-
-    // Define highlight vectorLayer.
-    this.highlightVectorSource = new VectorSource({});
-    this.highlightVectorLayer = new VectorLayer({
-      key: 'highlightLayer',
-      name: 'highlightLayer',
-      zIndex: 1,
-      source: this.highlightVectorSource,
-    });
-
-    // Define stop vectorLayer.
-    this.markerVectorSource = new VectorSource({});
-    this.markerVectorLayer = new VectorLayer({
-      zIndex: 1,
-      source: this.markerVectorSource,
-      key: 'markerLayer',
-      name: 'markerLayer',
-    });
-
-    this.layers = [
-      this.routeVectorLayer,
-      this.highlightVectorLayer,
-      this.markerVectorLayer,
-    ];
 
     this.loadBaseLayers();
 
@@ -346,6 +313,8 @@ class MapComponent extends PureComponent {
       generalizationEnabled,
       zoom,
       style,
+      geschosseLayer,
+      markerLayer,
     } = this.props;
     const currentMotChanged = currentMot && currentMot !== prevProps.currentMot;
     const tracksChanged = tracks !== prevProps.tracks;
@@ -430,22 +399,24 @@ class MapComponent extends PureComponent {
       if (
         currentMot &&
         currentMot !== prevProps.currentMot &&
-        !this.geschosseLayer.children.find(
-          (layer) => layer.name === `ch.sbb.geschosse2D`,
-        ).visible
+        !geschosseLayer
+          .getLayers()
+          .getArray()
+          .find((layer) => layer.name === `ch.sbb.geschosse2D`).visible
       ) {
         dispatchSetActiveFloor('2D');
       }
     }
 
     if (activeFloorChanged) {
-      this.geschosseLayer.children.forEach((layer) => {
+      geschosseLayer.getLayers().forEach((layer) => {
         // eslint-disable-next-line no-param-reassign
         layer.visible = false;
       });
-      const layer = this.geschosseLayer.children.find(
-        (l) => l.name === `ch.sbb.geschosse${activeFloor}`,
-      );
+      const layer = geschosseLayer
+        .getLayers()
+        .getArray()
+        .find((l) => l.name === `ch.sbb.geschosse${activeFloor}`);
       if (layer) {
         layer.visible = true;
       }
@@ -505,53 +476,12 @@ class MapComponent extends PureComponent {
   }
 
   loadBaseLayers() {
-    const {
-      APIKey,
-      generalizationActive,
-      generalizationEnabled,
-      activeFloor,
-      style,
-    } = this.props;
+    const { generalizationActive, generalizationEnabled, style, baseLayer } =
+      this.props;
 
-    this.dataLayer = new MaplibreLayer({
-      name: 'data',
-      visible: true,
-      style: `${style || 'travic_v2'}${
-        generalizationEnabled && generalizationActive ? '_generalized' : ''
-      }`,
-      apiKey: APIKey,
-    });
-
-    // Define LevelLayer
-    this.geschosseLayer = new Layer({
-      name: 'ch.sbb.geschosse',
-      visible: true,
-    });
-
-    this.geschosseLayer.children = FLOOR_LEVELS.map((level) => {
-      return new LevelLayer({
-        name: `ch.sbb.geschosse${level}`,
-        visible: level === activeFloor,
-        mapboxLayer: this.dataLayer,
-        styleLayersFilter: ({ metadata }) =>
-          metadata &&
-          (metadata['geops.filter'] === '2D' ||
-            metadata['geops.filter'] === 'level') &&
-          // Return the filter if it exists
-          metadata['geops.filter'],
-        level,
-      });
-    });
-    const allLayers = [
-      this.dataLayer,
-      // this.baseLayerOthers,
-      // this.baseLayerFoot,
-      // this.geschosseLayer,
-      this.routeVectorLayer,
-      this.markerVectorLayer,
-    ];
-    this.layers = allLayers;
-    this.map.changed();
+    baseLayer.style = `${style || 'travic_v2'}${
+      generalizationEnabled && generalizationActive ? '_generalized' : ''
+    }`;
   }
 
   /**
@@ -564,7 +494,7 @@ class MapComponent extends PureComponent {
       currentStopsGeoJSON,
       routingUrl,
       currentMot,
-      APIKey,
+      apiKey,
       resolveHops,
       floorInfo,
       dispatchShowNotification,
@@ -602,7 +532,7 @@ class MapComponent extends PureComponent {
         `${routingUrl}` +
         `?via=${hops.join(
           '|',
-        )}&mot=${currentMot}&resolve-hops=${resolveHops}&key=${APIKey}` +
+        )}&mot=${currentMot}&resolve-hops=${resolveHops}&key=${apiKey}` +
         `&elevation=${calculateElevation ? 1 : 0}` +
         `&interpolate_elevation=${calculateElevation}` +
         `&length=true&coord-radius=100.0&coord-punish=1000.0` +
@@ -703,6 +633,8 @@ class MapComponent extends PureComponent {
 
       const hoveredFeatures = this.map.getFeaturesAtPixel(evt.pixel, {
         hitTolerance: 2,
+        layerFilter: (layer) =>
+          /routeLayer|markerLayer/.test(layer.get('name')),
       });
       hoveredFeatures.forEach((feature) => {
         // if the feature is a via point or a route point to modify.
@@ -767,7 +699,8 @@ class MapComponent extends PureComponent {
       zoom,
       mots,
       currentMot,
-      APIKey,
+      apiKey,
+      layers,
       selectedRoutes,
       stationSearchUrl,
       yamlSnippetDialogOpen,
@@ -785,7 +718,7 @@ class MapComponent extends PureComponent {
           onZoomRouteClick={this.onZoomRouteClick}
           onPanViaClick={this.onPanViaClick}
           onDrawNewRoute={this.drawNewRoute}
-          APIKey={APIKey}
+          APIKey={apiKey}
           routes={selectedRoutes}
           hoveredCoords={hoveredPoint}
           onHighlightPoint={this.onHighlightPoint}
@@ -800,7 +733,7 @@ class MapComponent extends PureComponent {
         />
         <BasicMap
           center={center}
-          layers={this.layers}
+          layers={layers}
           onMapMoved={(evt) => this.onMapMoved(evt)}
           zoom={zoom}
           tabIndex={null}
@@ -887,6 +820,12 @@ const mapStateToProps = (state) => {
     yamlSnippetDialogOpen: state.MapReducer.yamlSnippetDialogOpen,
     mode: state.MapReducer.mode,
     style: state.MapReducer.style,
+    apiKey: state.MapReducer.apiKey,
+    layers: state.MapReducer.layers,
+    routingLayer: state.MapReducer.routingLayer,
+    markerLayer: state.MapReducer.markerLayer,
+    geschosseLayer: state.MapReducer.geschosseLayer,
+    baseLayer: state.MapReducer.baseLayer,
   };
 };
 
@@ -933,7 +872,7 @@ MapComponent.propTypes = {
   selectedRoutes: PropTypes.arrayOf(PropTypes.instanceOf(Feature)).isRequired,
   isRouteInfoOpen: PropTypes.bool.isRequired,
   mots: PropTypes.arrayOf(PropTypes.string).isRequired,
-  APIKey: PropTypes.string.isRequired,
+  apiKey: PropTypes.string.isRequired,
   stationSearchUrl: PropTypes.string.isRequired,
   dispatchSetZoom: PropTypes.func.isRequired,
   dispatchSetCenter: PropTypes.func.isRequired,
@@ -964,6 +903,15 @@ MapComponent.propTypes = {
   yamlSnippetDialogOpen: PropTypes.bool,
   mode: PropTypes.string,
   style: PropTypes.string,
+  layers: PropTypes.arrayOf(
+    PropTypes.instanceOf(
+      PropTypes.oneOfType([MaplibreLayer, VectorLayer, LevelLayer, Layer]),
+    ),
+  ).isRequired,
+  routingLayer: PropTypes.instanceOf(VectorLayer).isRequired,
+  markerLayer: PropTypes.instanceOf(VectorLayer).isRequired,
+  geschosseLayer: PropTypes.instanceOf(Group).isRequired,
+  baseLayer: PropTypes.instanceOf(MaplibreLayer).isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MapComponent);

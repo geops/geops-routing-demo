@@ -1,6 +1,60 @@
 import { Map } from 'ol';
+import { MaplibreLayer } from 'mobility-toolbox-js/ol';
+import { Vector as VectorLayer, Group } from 'ol/layer';
+import { Vector as VectorSource } from 'ol/source';
+import LevelLayer from '../../layers/LevelLayer';
 import * as actionTypes from '../actions/actionTypes';
-import { SEARCH_MODES, EUROPE_EXTENT } from '../../constants';
+import { SEARCH_MODES, EUROPE_EXTENT, FLOOR_LEVELS } from '../../constants';
+
+const apiKey = import.meta.env.VITE_API_KEY;
+
+const baseLayer = new MaplibreLayer({
+  name: 'data',
+  visible: true,
+  style: 'travic_v2',
+  apiKey,
+});
+
+const routeVectorLayer = new VectorLayer({
+  key: 'routeLayer',
+  name: 'routeLayer',
+  zIndex: 1,
+  source: new VectorSource({
+    features: [],
+  }),
+});
+
+const markerVectorLayer = new VectorLayer({
+  zIndex: 1,
+  source: new VectorSource({}),
+  key: 'markerLayer',
+  name: 'markerLayer',
+});
+
+const levelLayers = FLOOR_LEVELS.map((level) => {
+  return new LevelLayer({
+    name: `ch.sbb.geschosse${level}`,
+    visible: level === '2D',
+    mapboxLayer: baseLayer,
+    styleLayersFilter: ({ metadata }) =>
+      metadata &&
+      (metadata['geops.filter'] === '2D' ||
+        metadata['geops.filter'] === 'level') &&
+      // Return the filter if it exists
+      metadata['geops.filter'],
+    level,
+  });
+});
+const geschosseLayer = new Group({
+  name: 'ch.sbb.geschosse',
+  visible: true,
+  layers: levelLayers,
+});
+levelLayers.forEach((layer) => {
+  layer.set('parent', geschosseLayer);
+});
+
+const layers = [baseLayer, geschosseLayer, routeVectorLayer, markerVectorLayer];
 
 const initialState = {
   center: [949042.143189, 5899715.591163],
@@ -38,6 +92,12 @@ const initialState = {
   mode: undefined,
   yamlSnippetDialogOpen: false,
   isDesktop: true,
+  apiKey,
+  layers,
+  routingLayer: routeVectorLayer,
+  markerLayer: markerVectorLayer,
+  geschosseLayer,
+  baseLayer,
 };
 
 const setZoom = (state, action) => {

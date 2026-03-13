@@ -1,4 +1,4 @@
-import { MaplibreStyleLayer as MTMapboxStyleLayer } from 'mobility-toolbox-js/ol';
+import { MaplibreStyleLayer } from 'mobility-toolbox-js/ol';
 
 // Caching filters to reset to the original when toggle off the layer.
 const filterCacheByMbStyle = {};
@@ -11,10 +11,13 @@ const filterCacheByMbStyle = {};
  * @inheritdoc
  * @private
  */
-class LevelLayer extends MTMapboxStyleLayer {
+class LevelLayer extends MaplibreStyleLayer {
   constructor(options = {}) {
     super(options);
     this.level = options.level;
+    this.styleLayersFilter = options.layersFilter;
+
+    this.on('change:visible', this.applyLayoutVisibility.bind(this));
   }
 
   /**
@@ -46,6 +49,7 @@ class LevelLayer extends MTMapboxStyleLayer {
       const styleLayer = style.layers[i];
       // Return the value of the metadata geops.filter. if it exists.
       const metadata = this.styleLayersFilter(styleLayer);
+
       if (!metadata) {
         // eslint-disable-next-line no-continue
         continue;
@@ -53,7 +57,7 @@ class LevelLayer extends MTMapboxStyleLayer {
 
       // Store the initial filter value
       if (!filterCache[styleLayer.id]) {
-        filterCache[styleLayer.id] = [...styleLayer.filter];
+        filterCache[styleLayer.id] = [...(styleLayer.filter || [])];
       }
 
       // level 2D
@@ -67,6 +71,7 @@ class LevelLayer extends MTMapboxStyleLayer {
         // others levels
       } else if (metadata === 'level' && this.level !== '2D') {
         // If visible apply the new level filter.
+
         if (visible) {
           const currentFilter = [...filterCache[styleLayer.id]];
           currentFilter[1] = [
@@ -84,8 +89,9 @@ class LevelLayer extends MTMapboxStyleLayer {
           // We set the visibility to none only if others siblings level layer are also hidden.
           // it can happens when we load the topic via urls aand then we switch topic.
           // In that case change:visible events are not registered in the same order.
+
           if (
-            !this.get('parent')?.children.find(
+            !this.get('parent').children.find(
               (child) => child.level !== '2D' && child.visible,
             )
           ) {
@@ -93,7 +99,29 @@ class LevelLayer extends MTMapboxStyleLayer {
           }
         }
       }
+
+      if (styleLayer.metadata?.['general.floor'] === 'level_greyout') {
+        if (this.visible && this.level !== 0 && this.level !== '2D') {
+          mbMap.setLayoutProperty(styleLayer.id, 'visibility', 'visible');
+        } else if (this.visible) {
+          mbMap.setLayoutProperty(styleLayer.id, 'visibility', 'none');
+        }
+        const areAllHidden = !this.get('parent')?.children.some(
+          (l) => l.visible,
+        );
+        if (areAllHidden) {
+          mbMap.setLayoutProperty(styleLayer.id, 'visibility', 'none');
+        }
+      }
     }
+  }
+
+  /**
+   * Create exact copy of the LevelLayer
+   * @returns {LevelLayer} LevelLayer
+   */
+  clone(newOptions) {
+    return new LevelLayer({ ...this.options, ...newOptions });
   }
 }
 
