@@ -25,6 +25,8 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from 'recharts';
+import { useSelector } from 'react-redux';
+import { pointStyleFunction } from '../../config/styleConfig';
 import InterpolatedSurface from './InterpolatedSurface';
 import SurfaceElevation from './SurfaceElevation';
 import './RouteInfosDialog.scss';
@@ -33,8 +35,6 @@ const propTypes = {
   closeInfo: PropTypes.func.isRequired,
   routes: PropTypes.arrayOf(PropTypes.instanceOf(Feature)).isRequired,
   hoveredCoords: PropTypes.arrayOf(PropTypes.number),
-  onHighlightPoint: PropTypes.func.isRequired,
-  clearHighlightPoint: PropTypes.func.isRequired,
 };
 
 const tickFormatter = (length, isMeter) => {
@@ -109,9 +109,12 @@ function RouteInfosDialog({
   closeInfo,
   routes,
   hoveredCoords = null,
-  onHighlightPoint,
   clearHighlightPoint,
 }) {
+  const highlightLayer = useSelector(
+    (state) => state.MapReducer.highlightLayer,
+  );
+  const currentMot = useSelector((state) => state.MapReducer.currentMot);
   const containerRef = useRef();
   const [length, setLength] = useState(1);
   const [minAltitude, setMinAltitude] = useState(0);
@@ -119,6 +122,10 @@ function RouteInfosDialog({
   const [routePoints, setRoutePoints] = useState([]);
   const [distanceUnit, setDistanceUnit] = useState(null);
   const [isMeter, setIsMeter] = useState(null);
+  const highlightSource = useMemo(
+    () => highlightLayer.getSource(),
+    [highlightLayer],
+  );
 
   const renderTooltip = useCallback(
     ({ alt, surfaceElevation, distance }) => {
@@ -211,7 +218,10 @@ function RouteInfosDialog({
         </span>
       </div>
       <ResponsiveContainer width="98%" height="80%">
-        <LineChart data={routePoints} onMouseLeave={clearHighlightPoint}>
+        <LineChart
+          data={routePoints}
+          onMouseLeave={() => highlightSource.clear()}
+        >
           <YAxis
             type="number"
             axisLine={false}
@@ -277,7 +287,12 @@ function RouteInfosDialog({
               const point = content.payload[0].payload;
               const { xVal, yVal } = point;
 
-              onHighlightPoint([xVal, yVal]);
+              const feat = new Feature({
+                geometry: new Point([xVal, yVal]),
+              });
+              feat.setStyle(pointStyleFunction(currentMot));
+              highlightSource.clear();
+              highlightSource.addFeatures([feat]);
               // Render tooltip is we are hovering  the graph
               return renderTooltip(point);
             }}

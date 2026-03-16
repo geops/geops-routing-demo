@@ -79,7 +79,6 @@ class MapComponent extends PureComponent {
       isActiveRoute: false,
       hoveredPoint: null,
     };
-    this.onHighlightPoint = this.onHighlightPoint.bind(this);
     this.drawNewRoute = this.drawNewRoute.bind(this);
     this.loadBaseLayers = this.loadBaseLayers.bind(this);
 
@@ -461,20 +460,6 @@ class MapComponent extends PureComponent {
     }
   }
 
-  /*
-   *  Highlight a point on the route.
-   */
-  onHighlightPoint(coords) {
-    const { currentMot } = this.props;
-
-    this.highlightVectorSource.clear();
-    const feat = new Feature({
-      geometry: new Point(coords),
-    });
-    feat.setStyle(pointStyleFunction(currentMot));
-    this.highlightVectorSource.addFeatures([feat]);
-  }
-
   getHopIndex(markerFeature) {
     const { currentStops } = this.props;
     return currentStops.findIndex((element) => {
@@ -745,10 +730,6 @@ class MapComponent extends PureComponent {
           APIKey={apiKey}
           routes={selectedRoutes}
           hoveredCoords={hoveredPoint}
-          onHighlightPoint={this.onHighlightPoint}
-          clearHighlightPoint={() => {
-            this.highlightVectorSource.clear();
-          }}
         />
         <Snackbar
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}

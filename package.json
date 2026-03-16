@@ -110,17 +110,9 @@
       }
     ],
     "rules": {
+      "no-undef": "error",
+      "import/no-unresolved": "error",
       "arrow-body-style": 0,
-      "no-restricted-exports": 0,
-      "react/jsx-filename-extension": [
-        1,
-        {
-          "extensions": [
-            ".js",
-            ".jsx"
-          ]
-        }
-      ],
       "react/forbid-prop-types": "off",
       "prettier/prettier": "error",
       "react/require-default-props": "off",
