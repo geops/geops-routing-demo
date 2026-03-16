@@ -105,12 +105,7 @@ const getHoveredPointFromHoveredCoords = (hovCoords, linePoints, routeLine) => {
   return point;
 };
 
-function RouteInfosDialog({
-  closeInfo,
-  routes,
-  hoveredCoords = null,
-  clearHighlightPoint,
-}) {
+function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
   const highlightLayer = useSelector(
     (state) => state.MapReducer.highlightLayer,
   );

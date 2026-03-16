@@ -8,7 +8,6 @@ import { Map, Feature } from 'ol';
 import { containsExtent } from 'ol/extent';
 import { Vector as VectorLayer, Layer, Group } from 'ol/layer';
 
-import { Point } from 'ol/geom';
 import GeoJSON from 'ol/format/GeoJSON';
 import { Vector as VectorSource } from 'ol/source';
 import {
@@ -18,6 +17,7 @@ import {
 } from 'ol/interaction';
 import PropTypes from 'prop-types';
 import { touchOnly } from 'ol/events/condition';
+import { unByKey } from 'ol/Observable';
 import LevelLayer from '../../layers/LevelLayer';
 import MapFloorSwitcher from '../MapFloorSwitcher';
 import RoutingMenu from '../RoutingMenu';
@@ -35,7 +35,6 @@ import {
   propTypeCurrentStopsGeoJSON,
 } from '../../store/prop-types';
 import { DACH_EXTENT, EUROPE_EXTENT } from '../../constants';
-import { unByKey } from 'ol/Observable';
 import * as actions from '../../store/actions';
 import 'ol/ol.css';
 
@@ -65,13 +64,8 @@ class MapComponent extends PureComponent {
    */
   constructor(props) {
     super(props);
-    const {
-      dispatchSetClickLocation,
-      olMap,
-      routingLayer,
-      markerLayer,
-      highlightLayer,
-    } = this.props;
+    const { dispatchSetClickLocation, olMap, routingLayer, markerLayer } =
+      this.props;
     this.map = olMap;
     this.hoveredRoute = null;
     this.initialRouteDrag = null;
@@ -930,7 +924,6 @@ MapComponent.propTypes = {
   markerLayer: PropTypes.instanceOf(VectorLayer).isRequired,
   geschosseLayer: PropTypes.instanceOf(Group).isRequired,
   baseLayer: PropTypes.instanceOf(MaplibreLayer).isRequired,
-  highlightLayer: PropTypes.instanceOf(VectorLayer).isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MapComponent);

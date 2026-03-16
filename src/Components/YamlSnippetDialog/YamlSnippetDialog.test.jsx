@@ -7,6 +7,7 @@ import { Map } from 'ol';
 import mediaQuery from 'css-mediaquery';
 import YamlSnippetDialog from './YamlSnippetDialog';
 import fixture from './fixture';
+import { routeVectorLayer, debugLayer } from '../../store/reducers/Map';
 
 function createMatchMedia(width) {
   return (query) => ({
@@ -41,6 +42,8 @@ describe('YamlSnippetDialog', () => {
         floorInfo: [null, null],
         tracks: [null, null],
         generalizationGraph: 'gen5',
+        routingLayer: routeVectorLayer,
+        debugLayer,
       },
     });
   });

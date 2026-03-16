@@ -103,8 +103,6 @@ function FloorSelect({ index, disabled, singleStop = null }) {
     return null;
   }
 
-  console.log(floorInfo);
-
   return (
     <FormControl variant="standard" fullWidth>
       <InputLabel shrink id="rd-floor-select-label">
