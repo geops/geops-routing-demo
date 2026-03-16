@@ -17,6 +17,7 @@ import {
   setTracks,
   setMode,
   setStyle,
+  setZoom,
 } from '../../store/actions/Map';
 
 const abortController = new AbortController();
@@ -153,7 +154,8 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
 
       if (zParam && !isNaN(parseFloat(zParam))) {
         // Set zoom if defined
-        map.getView().setZoom(zParam);
+        map.getView().setZoom(parseFloat(zParam));
+        dispatch(setZoom(parseFloat(zParam)));
       }
 
       if (

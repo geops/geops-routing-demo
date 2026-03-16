@@ -24,12 +24,6 @@ const propTypes = {
   mots: PropTypes.arrayOf(PropTypes.string),
 };
 
-const defaultProps = {
-  mots: VALID_MOTS,
-  routingUrl: ROUTING_BASE_URL,
-  stationSearchUrl: STATION_SEARCH_BASE_URL,
-};
-
 const fontSize = '1rem';
 const color = '#515151';
 const theme = createTheme({
@@ -70,15 +64,18 @@ const theme = createTheme({
   },
 });
 
+const apiKey = import.meta.env.VITE_API_KEY;
 /**
  * Root component of the application that holds all other sub-components.
  * @param {string[]} mots List of mots to be available (ex: ['bus', 'train'])
  * @param {string} routingUrl The API routing url to be used for navigation.
  * @param {string} stationSearchUrl The API station search URL to be used for searching for stations.
  */
-function App(props) {
-  const { mots, routingUrl, stationSearchUrl } = props;
-  const apiKey = process.env.REACT_APP_API_KEY;
+function App({
+  mots = VALID_MOTS,
+  routingUrl = ROUTING_BASE_URL,
+  stationSearchUrl = STATION_SEARCH_BASE_URL,
+}) {
   const dispatch = useDispatch();
   const mode = useSelector((state) => state.MapReducer.mode);
   const generalizationEnabled = useSelector(
@@ -135,6 +132,5 @@ function App(props) {
 }
 
 App.propTypes = propTypes;
-App.defaultProps = defaultProps;
 
 export default App;

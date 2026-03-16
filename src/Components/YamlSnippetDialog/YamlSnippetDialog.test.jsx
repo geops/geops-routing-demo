@@ -10,11 +10,12 @@ import fixture from './fixture';
 
 function createMatchMedia(width) {
   return (query) => ({
-    matches: mediaQuery.match(query, {
-      width,
-    }),
-    addListener: () => {},
-    removeListener: () => {},
+    matches: mediaQuery.match(query, { width }),
+    media: query,
+    onchange: null,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
   });
 }
 

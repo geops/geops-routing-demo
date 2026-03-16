@@ -15,14 +15,10 @@ const propTypes = {
   singleStop: PropTypes.oneOfType([PropTypes.string, PropTypes.array]), // array for an array  of coordinate, string for a station name
 };
 
-const defaultProps = {
-  singleStop: null,
-};
-
 /**
  * The component that displays the floor selector
  */
-function FloorSelect({ index, disabled, singleStop }) {
+function FloorSelect({ index, disabled, singleStop = null }) {
   const dispatch = useDispatch();
   const floorInfo = useSelector((state) => state.MapReducer.floorInfo);
   const activeFloor = useSelector((state) => state.MapReducer.activeFloor);
@@ -139,6 +135,5 @@ function FloorSelect({ index, disabled, singleStop }) {
 }
 
 FloorSelect.propTypes = propTypes;
-FloorSelect.defaultProps = defaultProps;
 
 export default React.memo(FloorSelect);

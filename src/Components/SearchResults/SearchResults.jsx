@@ -33,9 +33,10 @@ const renderSecondary = (id, code, countryCode, ifopt) => {
  * The component that displays the station search results
  * @category RoutingMenu
  */
-function SearchResults(props) {
-  const { currentSearchResults, processClickedResultHandler } = props;
-
+function SearchResults({
+  currentSearchResults = [],
+  processClickedResultHandler,
+}) {
   if (currentSearchResults.length === 0) {
     return null;
   }
@@ -107,10 +108,6 @@ function SearchResults(props) {
 SearchResults.propTypes = {
   currentSearchResults: PropTypes.arrayOf(PropTypes.object),
   processClickedResultHandler: PropTypes.func.isRequired,
-};
-
-SearchResults.defaultProps = {
-  currentSearchResults: [],
 };
 
 export default SearchResults;

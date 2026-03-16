@@ -25,20 +25,16 @@ import {
   ReferenceLine,
   ResponsiveContainer,
 } from 'recharts';
-import { ReactComponent as InterpolatedSvg } from './interpolated_surface.svg';
-import { ReactComponent as SurfaceSvg } from './surface_elevation.svg';
+import { useSelector } from 'react-redux';
+import { pointStyleFunction } from '../../config/styleConfig';
+import InterpolatedSurface from './InterpolatedSurface';
+import SurfaceElevation from './SurfaceElevation';
 import './RouteInfosDialog.scss';
 
 const propTypes = {
   closeInfo: PropTypes.func.isRequired,
   routes: PropTypes.arrayOf(PropTypes.instanceOf(Feature)).isRequired,
   hoveredCoords: PropTypes.arrayOf(PropTypes.number),
-  onHighlightPoint: PropTypes.func.isRequired,
-  clearHighlightPoint: PropTypes.func.isRequired,
-};
-
-const defaultProps = {
-  hoveredCoords: null,
 };
 
 const tickFormatter = (length, isMeter) => {
@@ -112,17 +108,24 @@ const getHoveredPointFromHoveredCoords = (hovCoords, linePoints, routeLine) => {
 function RouteInfosDialog({
   closeInfo,
   routes,
-  hoveredCoords,
-  onHighlightPoint,
+  hoveredCoords = null,
   clearHighlightPoint,
 }) {
+  const highlightLayer = useSelector(
+    (state) => state.MapReducer.highlightLayer,
+  );
+  const currentMot = useSelector((state) => state.MapReducer.currentMot);
   const containerRef = useRef();
-  const [length, setLength] = useState(null);
+  const [length, setLength] = useState(1);
   const [minAltitude, setMinAltitude] = useState(0);
-  const [maxAltitude, setMaxAltitude] = useState(null);
+  const [maxAltitude, setMaxAltitude] = useState(100);
   const [routePoints, setRoutePoints] = useState([]);
   const [distanceUnit, setDistanceUnit] = useState(null);
   const [isMeter, setIsMeter] = useState(null);
+  const highlightSource = useMemo(
+    () => highlightLayer.getSource(),
+    [highlightLayer],
+  );
 
   const renderTooltip = useCallback(
     ({ alt, surfaceElevation, distance }) => {
@@ -154,7 +157,8 @@ function RouteInfosDialog({
       .reduce((a, b) => a + b, 0);
     setLength(lgth);
     setDistanceUnit(lgth > 1000 ? 'km' : 'm');
-    setIsMeter(distanceUnit === 'm');
+    const isMeterValue = lgth <= 1000;
+    setIsMeter(isMeterValue);
 
     const xArray = everyNth(coords, 3, 0);
     const yArray = everyNth(coords, 3, 1);
@@ -207,14 +211,17 @@ function RouteInfosDialog({
       <div className="rd-info-dialog-header">Route information</div>
       <div className="rd-info-dialog-legend">
         <span>
-          <SurfaceSvg /> surface elevation
+          <SurfaceElevation /> surface elevation
         </span>
         <span>
-          <InterpolatedSvg /> interpolated altitude
+          <InterpolatedSurface /> interpolated altitude
         </span>
       </div>
       <ResponsiveContainer width="98%" height="80%">
-        <LineChart data={routePoints} onMouseLeave={clearHighlightPoint}>
+        <LineChart
+          data={routePoints}
+          onMouseLeave={() => highlightSource.clear()}
+        >
           <YAxis
             type="number"
             axisLine={false}
@@ -280,7 +287,12 @@ function RouteInfosDialog({
               const point = content.payload[0].payload;
               const { xVal, yVal } = point;
 
-              onHighlightPoint([xVal, yVal]);
+              const feat = new Feature({
+                geometry: new Point([xVal, yVal]),
+              });
+              feat.setStyle(pointStyleFunction(currentMot));
+              highlightSource.clear();
+              highlightSource.addFeatures([feat]);
               // Render tooltip is we are hovering  the graph
               return renderTooltip(point);
             }}
@@ -292,6 +304,5 @@ function RouteInfosDialog({
 }
 
 RouteInfosDialog.propTypes = propTypes;
-RouteInfosDialog.defaultProps = defaultProps;
 
 export default React.memo(RouteInfosDialog);

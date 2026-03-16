@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { transformExtent } from 'ol/proj';
 import {
+  Box,
   Button,
   Checkbox,
   FormControlLabel,
@@ -19,7 +20,6 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import { makeStyles, withStyles } from '@mui/styles';
 import {
   ArrowLeft,
   ArrowRight,
@@ -29,7 +29,7 @@ import {
   ExpandMore,
   ExpandLess,
 } from '@mui/icons-material';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import PropTypes from 'prop-types';
 
 import {
@@ -65,9 +65,7 @@ const COORD_REGEX = /^\d+\.?\d*,\d+\.?\d*$/;
 const motHasGeneralization = (mot) =>
   /^(rail|funicular|ferry|gondola|bus|tram|subway)$/.test(mot);
 
-function TabPanel(props) {
-  const { children, value, index } = props;
-
+function TabPanel({ children, value = null, index = null }) {
   return (
     <Typography
       component="div"
@@ -81,15 +79,21 @@ function TabPanel(props) {
   );
 }
 
-const RdCheckbox = withStyles({
-  root: {
-    '&$checked': {
-      color: '#3f51b5',
-    },
+const dropDownSx = {
+  width: 120,
+  backgroundColor: 'white',
+};
+const selectSx = {
+  height: '80%',
+  textAlign: 'center',
+  '& .MuiSelect-select': {
+    paddingLeft: '0px !important',
+    backgroundColor: 'white',
   },
-  checked: {},
-  // eslint-disable-next-line react/jsx-props-no-spreading
-})((props) => <Checkbox color="default" {...props} />);
+  '& .MuiSelect-select:focus': {
+    backgroundColor: 'white',
+  },
+};
 
 /**
  * The routing menu props
@@ -101,72 +105,6 @@ const RdCheckbox = withStyles({
  * @property {LongLat} clickLocation The location clicked by the user in the form of [long,lat].
  * @category Props
  */
-
-const useStyles = makeStyles((theme) => ({
-  header: {
-    display: 'flex',
-    width: 'calc(100% - 32px)',
-    gap: '10px',
-    [theme.breakpoints.only('xs')]: {
-      width: '100%',
-      flexWrap: 'wrap',
-    },
-  },
-  tabs: {
-    [theme.breakpoints.only('xs')]: {
-      width: '100%',
-    },
-  },
-  otherHeaderActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 20,
-    [theme.breakpoints.only('xs')]: {
-      width: '100%',
-      margin: '0 20px',
-    },
-  },
-  tab: {
-    minWidth: 100,
-    [theme.breakpoints.only('sm')]: {
-      minWidth: '10vw',
-    },
-    [theme.breakpoints.only('xs')]: {
-      minWidth: 100,
-      width: '33%',
-    },
-  },
-  dropDown: {
-    maxWidth: 120,
-    minWidth: 90,
-    backgroundColor: 'white',
-  },
-  select: {
-    height: '80%',
-    textAlign: 'center',
-
-    '& fieldset': {
-      border: 'none',
-    },
-  },
-  selectRoot: {
-    paddingLeft: '0px !important',
-  },
-  selectInput: {
-    backgroundColor: 'white',
-    '&:focus': {
-      backgroundColor: 'white',
-    },
-  },
-  checkbox: {
-    overflow: 'hidden',
-  },
-  checkboxLabel: {
-    textOverflow: 'ellipsis',
-    overflow: 'hidden',
-  },
-}));
-
 let abortController = new AbortController();
 
 /**
@@ -215,16 +153,15 @@ function RoutingMenu({
   mots,
   stationSearchUrl,
   APIKey,
-  hoveredCoords,
+  hoveredCoords = null,
   isActiveRoute,
-  onZoomRouteClick,
-  onPanViaClick,
+  onZoomRouteClick = undefined,
+  onPanViaClick = undefined,
   onDrawNewRoute,
   onHighlightPoint,
   clearHighlightPoint,
 }) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
-  const classes = useStyles();
   const dispatch = useDispatch();
 
   const currentMotsVal = validateMots(mots, DEFAULT_MOTS);
@@ -628,10 +565,24 @@ function RoutingMenu({
           <div style={{ height: 5 }}>
             {showLoadingBar ? <LinearProgress /> : null}
           </div>
-          <div className={classes.header}>
+          <Box
+            sx={(theme) => ({
+              display: 'flex',
+              width: 'calc(100% - 32px)',
+              gap: '10px',
+              [theme.breakpoints.only('xs')]: {
+                width: '100%',
+                flexWrap: 'wrap',
+              },
+            })}
+          >
             <Tabs
               value={DEFAULT_MOTS.includes(currentMot) ? currentMot : false}
-              className={classes.tabs}
+              sx={(theme) => ({
+                [theme.breakpoints.only('xs')]: {
+                  width: '100%',
+                },
+              })}
               onChange={(e, mot) => {
                 handleMotChange(e, mot, tracks);
               }}
@@ -646,7 +597,16 @@ function RoutingMenu({
                 return (
                   <Tooltip title={capitalName} value={name} key={`mot-${name}`}>
                     <Tab
-                      className={classes.tab}
+                      sx={(theme) => ({
+                        minWidth: 100,
+                        [theme.breakpoints.only('sm')]: {
+                          minWidth: 90,
+                        },
+                        [theme.breakpoints.only('xs')]: {
+                          minWidth: 100,
+                          width: '33%',
+                        },
+                      })}
                       value={name}
                       icon={icon}
                       aria-label={name}
@@ -656,16 +616,22 @@ function RoutingMenu({
                 );
               })}
             </Tabs>
-            <div className={classes.otherHeaderActions}>
+            <Box
+              sx={(theme) => ({
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                [theme.breakpoints.only('xs')]: {
+                  width: '100%',
+                  margin: '0 20px',
+                },
+              })}
+            >
               {otherMots.length ? (
-                <FormControl className={classes.dropDown}>
+                <FormControl sx={dropDownSx}>
                   <Select
                     renderValue={(val) => (val !== '' ? val : 'Other MOTs')}
-                    className={classes.select}
-                    classes={{
-                      select: classes.selectRoot,
-                      nativeInput: classes.selectInput,
-                    }}
+                    sx={selectSx}
                     variant="standard"
                     labelId="rd-other-mot-label"
                     value={currentOtherMot || ''}
@@ -687,14 +653,10 @@ function RoutingMenu({
                 </FormControl>
               ) : null}
               {currentMot === 'foot' ? (
-                <FormControl className={classes.dropDown}>
+                <FormControl sx={dropDownSx}>
                   <Select
                     renderValue={(val) => val}
-                    className={classes.select}
-                    classes={{
-                      select: classes.selectRoot,
-                      nativeInput: classes.selectInput,
-                    }}
+                    sx={selectSx}
                     labelId="rd-other-mot-label"
                     variant="standard"
                     value={searchMode}
@@ -730,11 +692,17 @@ function RoutingMenu({
                 <Tooltip title="Toggle generalization">
                   <FormControlLabel
                     disabled={showLoadingBar}
-                    className={classes.checkbox}
-                    classes={{ label: classes.checkboxLabel }}
+                    sx={{
+                      overflow: 'hidden',
+                      '& .MuiFormControlLabel-label': {
+                        textOverflow: 'ellipsis',
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                      },
+                    }}
                     variant="standard"
                     control={
-                      <RdCheckbox
+                      <Checkbox
                         checked={generalizationActive}
                         onChange={() =>
                           dispatch(
@@ -747,8 +715,8 @@ function RoutingMenu({
                   />
                 </Tooltip>
               ) : null}
-            </div>
-          </div>
+            </Box>
+          </Box>
           <TabPanel padding={10}>
             <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="droppable">
@@ -815,7 +783,7 @@ function RoutingMenu({
               processClickedResultHandler={processClickedResultHandler}
             />
             <Grid container padding={3} style={{ paddingBottom: 10 }}>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <Tooltip title="Zoom to the route">
                   <span>
                     <Button
@@ -828,7 +796,7 @@ function RoutingMenu({
                   </span>
                 </Tooltip>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }} textAlign="right">
                 <Tooltip title="Route information">
                   <span>
                     <Button
@@ -888,11 +856,6 @@ TabPanel.propTypes = {
   index: PropTypes.number,
 };
 
-TabPanel.defaultProps = {
-  value: null,
-  index: null,
-};
-
 RoutingMenu.propTypes = {
   mots: PropTypes.arrayOf(PropTypes.string).isRequired,
   APIKey: PropTypes.string.isRequired,
@@ -904,12 +867,6 @@ RoutingMenu.propTypes = {
   onDrawNewRoute: PropTypes.func.isRequired,
   onHighlightPoint: PropTypes.func.isRequired,
   clearHighlightPoint: PropTypes.func.isRequired,
-};
-
-RoutingMenu.defaultProps = {
-  hoveredCoords: null,
-  onZoomRouteClick: undefined,
-  onPanViaClick: undefined,
 };
 
 export default RoutingMenu;

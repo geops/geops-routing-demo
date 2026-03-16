@@ -1,4 +1,5 @@
 import React from 'react';
+import { vi } from 'vitest';
 import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
@@ -7,9 +8,10 @@ import { Map } from 'ol';
 import Permalink from './Permalink';
 
 describe('Permalink', () => {
-  const setState = jest.fn();
-  const useStateSpy = jest.spyOn(React, 'useState');
+  const setState = vi.fn();
+  const useStateSpy = vi.spyOn(React, 'useState');
   useStateSpy.mockImplementation((init) => [init, setState]);
+
   const mockStore = configureStore([thunk]);
   let store;
 
@@ -31,7 +33,7 @@ describe('Permalink', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('should not dispatch search params in default state', () => {
@@ -41,6 +43,7 @@ describe('Permalink', () => {
       },
       writable: true,
     });
+
     render(
       <Provider store={store}>
         <Permalink
@@ -79,6 +82,7 @@ describe('Permalink', () => {
       type: 'SET_CURRENT_MOT',
       currentMot: 'bus',
     });
+
     expect(store.getActions()[2]).toEqual({
       type: 'SET_RESOLVE_HOPS',
       resolveHops: true,

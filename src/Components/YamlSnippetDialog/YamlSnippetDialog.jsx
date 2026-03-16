@@ -1,6 +1,5 @@
 import React, { useMemo, useEffect } from 'react';
 import { IconButton, Paper, Tooltip, useMediaQuery } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { Translate } from 'ol/interaction';
 import { Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
@@ -25,34 +24,7 @@ const expectedViaPointStyle = new Style({
 
 const debugSource = new VectorSource({});
 
-const useStyles = makeStyles(() => {
-  return {
-    container: {
-      position: 'absolute',
-      left: 710,
-      top: 10,
-    },
-    content: {
-      padding: 20,
-      minHeight: 195,
-      minWidth: 250,
-    },
-    codeBlock: {
-      marginTop: 15,
-      padding: '15px 10px',
-      backgroundColor: '#eeeeee',
-      fontSize: 14,
-      whiteSpace: 'pre',
-      maxWidth: 400,
-      overflowX: 'auto',
-      fontFamily:
-        'Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New',
-    },
-  };
-});
-
 function YamlSnippetDialog() {
-  const classes = useStyles();
   const dispatch = useDispatch();
   const {
     selectedRoutes,
@@ -146,7 +118,13 @@ function YamlSnippetDialog() {
   if (!isDesktop) return null;
 
   return (
-    <div className={classes.container}>
+    <div
+      style={{
+        position: 'absolute',
+        left: 710,
+        top: 10,
+      }}
+    >
       <Paper elevation={3} square>
         <Tooltip title="Close">
           <IconButton
@@ -157,15 +135,32 @@ function YamlSnippetDialog() {
             <CloseIcon fontSize="small" />
           </IconButton>
         </Tooltip>
-        <div className={classes.content}>
-          <div className={classes.codeBlock}>
+        <div
+          style={{
+            padding: 20,
+            minHeight: 195,
+            minWidth: 250,
+          }}
+        >
+          <div
+            style={{
+              marginTop: 15,
+              padding: '15px 10px',
+              backgroundColor: '#eeeeee',
+              fontSize: 14,
+              whiteSpace: 'pre',
+              maxWidth: 400,
+              overflowX: 'auto',
+              fontFamily:
+                'Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New',
+            }}
+          >
             <div>
               <b data-testid="header">{`${currentMot}-xx:`}</b>
             </div>
             <div>
               {'  '}
-              <b>description:</b>{' '}
-              <span className={classes.indented}>Fill out</span>
+              <b>description:</b> <span>Fill out</span>
             </div>
             <div>
               {'  '}
