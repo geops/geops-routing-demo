@@ -109,6 +109,7 @@ function YamlSnippetDialog() {
     map?.addInteraction(translate);
     return () => {
       map?.removeInteraction(translate);
+      debugLayer.getSource().clear();
     };
   }, [map, debugLayer]);
 
@@ -123,10 +124,6 @@ function YamlSnippetDialog() {
         .map((feat) => feat.getGeometry().getCoordinates()),
     );
   }, [expectedViaPoints, map, debugLayer]);
-
-  useEffect(() => {
-    return () => debugLayer.getSource().clear();
-  }, [debugLayer]);
 
   if (!isDesktop) return null;
 
