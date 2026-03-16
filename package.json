@@ -59,7 +59,6 @@
   "scripts": {
     "cp": "generact --root src/Components",
     "deploy:ghpages": "gh-pages -d build",
-    "eject": "react-scripts eject",
     "format": "prettier --write 'src/**/*.{js,jsx}' && eslint 'src/**/*.{js,jsx}' --fix && stylelint 'src/**/*.css' 'src/**/*.scss' --fix",
     "lint": "eslint 'src/**/*.{js,jsx}' && stylelint 'src/**/*.{css,scss}'",
     "prepare": "is-ci || husky install",
