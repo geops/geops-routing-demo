@@ -1,7 +1,6 @@
 {
   "name": "geops-routing-demo",
   "description": "Sample component that uses geOps Routing API",
-  "main": "build/index.js",
   "version": "1.0.0",
   "homepage": "https://routing-demo.geops.io/",
   "dependencies": {
@@ -58,7 +57,6 @@
   },
   "scripts": {
     "cp": "generact --root src/Components",
-    "deploy:ghpages": "gh-pages -d build",
     "format": "prettier --write 'src/**/*.{js,jsx}' && eslint 'src/**/*.{js,jsx}' --fix && stylelint 'src/**/*.css' 'src/**/*.scss' --fix",
     "lint": "eslint 'src/**/*.{js,jsx}' && stylelint 'src/**/*.{css,scss}'",
     "prepare": "is-ci || husky install",
