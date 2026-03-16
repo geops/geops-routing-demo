@@ -29,7 +29,7 @@ import {
   ExpandMore,
   ExpandLess,
 } from '@mui/icons-material';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import PropTypes from 'prop-types';
 
 import {
@@ -783,7 +783,7 @@ function RoutingMenu({
               processClickedResultHandler={processClickedResultHandler}
             />
             <Grid container padding={3} style={{ paddingBottom: 10 }}>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }}>
                 <Tooltip title="Zoom to the route">
                   <span>
                     <Button
@@ -796,7 +796,7 @@ function RoutingMenu({
                   </span>
                 </Tooltip>
               </Grid>
-              <Grid item xs={6}>
+              <Grid size={{ xs: 6 }} textAlign="right">
                 <Tooltip title="Route information">
                   <span>
                     <Button

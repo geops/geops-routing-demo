@@ -69,7 +69,7 @@ function SearchField({
       alignItems="flex-end"
       style={{ padding: '2px 0px 2px 0px', flexWrap: 'nowrap' }}
     >
-      <Grid item xs={1} textAlign="right" style={{ minWidth: 35 }}>
+      <Grid size={{ xs: 1 }} style={{ minWidth: 35, textAlign: 'right' }}>
         <Tooltip title="Change order of the via points">
           <span>
             <IconButton aria-label="dragHop" size="small" disabled>
@@ -79,10 +79,8 @@ function SearchField({
         </Tooltip>
       </Grid>
       <Grid
-        item
-        xs={1}
-        textAlign="center"
-        style={{ minWidth: 30, paddingLeft: 0 }}
+        size={{ xs: 1 }}
+        style={{ minWidth: 30, paddingLeft: 0, textAlign: 'center' }}
       >
         <Tooltip title="Pan to the feature">
           <span>
@@ -95,7 +93,7 @@ function SearchField({
           </span>
         </Tooltip>
       </Grid>
-      <Grid item xs={7} style={{ minWidth: 100 }}>
+      <Grid size={{ xs: 7 }} style={{ minWidth: 100 }}>
         <TextField
           fullWidth
           inputRef={inputReference}
@@ -123,7 +121,7 @@ function SearchField({
           }}
         />
       </Grid>
-      <Grid item xs={2} style={{ minWidth: 46, maxWidth: 84 }}>
+      <Grid size={{ xs: 2 }} style={{ minWidth: 46, maxWidth: 84 }}>
         {currentMot === 'foot' ? (
           <FloorSelect
             index={index}
@@ -135,10 +133,8 @@ function SearchField({
         )}
       </Grid>
       <Grid
-        item
-        xs={1}
-        textAlign="center"
-        style={{ minWidth: 26, maxWidth: 26 }}
+        size={{ xs: 1 }}
+        style={{ minWidth: 26, maxWidth: 26, textAlign: 'center' }}
       >
         {index !== currentStops.length - 1 && (
           <Tooltip title="Add Via Point">
@@ -158,10 +154,8 @@ function SearchField({
         )}
       </Grid>
       <Grid
-        item
-        xs={1}
-        textAlign="center"
-        style={{ minWidth: 26, maxWidth: 26 }}
+        size={{ xs: 1 }}
+        style={{ minWidth: 26, maxWidth: 26, textAlign: 'center' }}
       >
         {index !== 0 && index !== currentStops.length - 1 && (
           <Tooltip title="Remove Via Point">

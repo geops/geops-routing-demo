@@ -91,9 +91,10 @@ class LevelLayer extends MaplibreStyleLayer {
           // In that case change:visible events are not registered in the same order.
 
           if (
-            !this.get('parent').children.find(
-              (child) => child.level !== '2D' && child.visible,
-            )
+            !this.get('parent')
+              .getLayers()
+              .getArray()
+              .find((child) => child.level !== '2D' && child.visible)
           ) {
             mbMap.setLayoutProperty(styleLayer.id, 'visibility', 'none');
           }

@@ -15,6 +15,13 @@ const baseLayer = new MaplibreLayer({
   apiKey,
 });
 
+const highlightLayer = new VectorLayer({
+  key: 'highlightLayer',
+  name: 'highlightLayer',
+  zIndex: 1,
+  source: new VectorSource({}),
+});
+
 const routeVectorLayer = new VectorLayer({
   key: 'routeLayer',
   name: 'routeLayer',
@@ -54,7 +61,13 @@ levelLayers.forEach((layer) => {
   layer.set('parent', geschosseLayer);
 });
 
-const layers = [baseLayer, geschosseLayer, routeVectorLayer, markerVectorLayer];
+const layers = [
+  baseLayer,
+  geschosseLayer,
+  routeVectorLayer,
+  markerVectorLayer,
+  highlightLayer,
+];
 
 const initialState = {
   center: [949042.143189, 5899715.591163],
@@ -98,6 +111,7 @@ const initialState = {
   markerLayer: markerVectorLayer,
   geschosseLayer,
   baseLayer,
+  highlightLayer,
 };
 
 const setZoom = (state, action) => {

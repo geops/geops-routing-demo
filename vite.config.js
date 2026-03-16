@@ -10,9 +10,6 @@ export default defineConfig(() => {
     server: {
       port: 3000,
     },
-    deps: {
-      inline: ['mobility-toolbox-js', 'maplibre-gl'],
-    },
     resolve: {
       alias: {
         'maplibre-gl': 'maplibre-gl/dist/maplibre-gl.js',
@@ -22,6 +19,15 @@ export default defineConfig(() => {
       environment: 'jsdom',
       globals: true,
       setupFiles: './src/setupTests.js',
+      server: {
+        deps: {
+          inline: [
+            'mobility-toolbox-js',
+            'maplibre-gl',
+            '@geoblocks/ol-maplibre-layer',
+          ],
+        },
+      },
       transformMode: {
         web: [
           /node_modules\/(@geops\/react-ui|jsts|ol|ol-mapbox-style|ole|filter-obj|react-spatial|mobility-toolbox-js|quick-lru|split-on-first|query-string|decode-uri-component)\//,

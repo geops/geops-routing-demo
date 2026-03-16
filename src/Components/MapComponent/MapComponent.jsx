@@ -64,8 +64,13 @@ class MapComponent extends PureComponent {
    */
   constructor(props) {
     super(props);
-    const { dispatchSetClickLocation, olMap, routingLayer, markerLayer } =
-      this.props;
+    const {
+      dispatchSetClickLocation,
+      olMap,
+      routingLayer,
+      markerLayer,
+      highlightLayer,
+    } = this.props;
     this.map = olMap;
     this.hoveredRoute = null;
     this.initialRouteDrag = null;
@@ -86,6 +91,7 @@ class MapComponent extends PureComponent {
     });
     this.routeVectorSource = routingLayer.getSource();
     this.markerVectorSource = markerLayer.getSource();
+    this.highlightVectorSource = highlightLayer.getSource();
     routingLayer.setStyle((feature) => {
       const { currentMot, activeFloor } = this.props;
       return lineStyleFunction(
@@ -100,8 +106,12 @@ class MapComponent extends PureComponent {
     this.loadBaseLayers();
 
     const translate = new Translate({
-      layers: [this.markerVectorLayer],
+      layers: [markerLayer],
       hitTolerance: 3,
+    });
+
+    translate.on('translatestart', (evt) => {
+      [this.initialNodeDrag] = evt.features.getArray();
     });
 
     translate.on('translateend', (evt) => {
@@ -146,6 +156,7 @@ class MapComponent extends PureComponent {
           coordinates: evt.coordinate,
         },
       };
+      this.initialNodeDrag = null;
       dispatchSetTracks([...tracks]);
       // dispatchSetFloorInfo([...floorInfo]);
       dispatchSetCurrentStops([...currentStops]);
@@ -167,6 +178,7 @@ class MapComponent extends PureComponent {
         features: evt.features.getArray(),
         coordinate: evt.mapBrowserEvent.coordinate,
       };
+      this.map.getTargetElement().style.cursor = 'grabbing';
     });
 
     modify.on('modifyend', (evt) => {
@@ -259,6 +271,7 @@ class MapComponent extends PureComponent {
         dispatchSetCurrentStopsGeoJSON([...currentStopsGeoJSON]);
       }
       this.initialRouteDrag = null;
+      this.map.getTargetElement().style.cursor = 'auto';
     });
 
     const interactions = defaultInteractions().extend([modify, translate]);
@@ -314,7 +327,6 @@ class MapComponent extends PureComponent {
       zoom,
       style,
       geschosseLayer,
-      markerLayer,
     } = this.props;
     const currentMotChanged = currentMot && currentMot !== prevProps.currentMot;
     const tracksChanged = tracks !== prevProps.tracks;
@@ -620,6 +632,7 @@ class MapComponent extends PureComponent {
   }
 
   initialize() {
+    const { routingLayer } = this.props;
     this.map.on('pointermove', (evt) => {
       if (
         touchOnly(evt) ||
@@ -672,12 +685,23 @@ class MapComponent extends PureComponent {
         this.setState({ hoveredStationName: null });
       }
 
+      if (hoveredFeatures.length && !evt.dragging) {
+        this.map.getTargetElement().style.cursor = 'grab';
+      } else if (
+        evt.dragging &&
+        (this.initialNodeDrag || this.initialRouteDrag)
+      ) {
+        this.map.getTargetElement().style.cursor = 'grabbing';
+      } else {
+        this.map.getTargetElement().style.cursor = '';
+      }
+
       // If the hovered route has changed we update the hover effect
       if (this.hoveredRoute !== hoveredRoute) {
         this.hoveredRoute = hoveredRoute;
 
         // Update the style
-        this.routeVectorLayer.changed();
+        routingLayer.changed();
 
         if (!this.hoveredRoute) {
           this.setState({
@@ -826,6 +850,7 @@ const mapStateToProps = (state) => {
     markerLayer: state.MapReducer.markerLayer,
     geschosseLayer: state.MapReducer.geschosseLayer,
     baseLayer: state.MapReducer.baseLayer,
+    highlightLayer: state.MapReducer.highlightLayer,
   };
 };
 
@@ -912,6 +937,7 @@ MapComponent.propTypes = {
   markerLayer: PropTypes.instanceOf(VectorLayer).isRequired,
   geschosseLayer: PropTypes.instanceOf(Group).isRequired,
   baseLayer: PropTypes.instanceOf(MaplibreLayer).isRequired,
+  highlightLayer: PropTypes.instanceOf(VectorLayer).isRequired,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MapComponent);
