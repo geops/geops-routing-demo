@@ -35,6 +35,7 @@ import {
   propTypeCurrentStopsGeoJSON,
 } from '../../store/prop-types';
 import { DACH_EXTENT, EUROPE_EXTENT } from '../../constants';
+import { unByKey } from 'ol/Observable';
 import * as actions from '../../store/actions';
 import 'ol/ol.css';
 
@@ -103,16 +104,16 @@ class MapComponent extends PureComponent {
 
     this.loadBaseLayers();
 
-    const translate = new Translate({
+    this.translateInteraction = new Translate({
       layers: [markerLayer],
       hitTolerance: 3,
     });
 
-    translate.on('translatestart', (evt) => {
+    this.translateInteraction.on('translatestart', (evt) => {
       [this.initialNodeDrag] = evt.features.getArray();
     });
 
-    translate.on('translateend', (evt) => {
+    this.translateInteraction.on('translateend', (evt) => {
       const {
         tracks,
         dispatchSetTracks,
@@ -161,7 +162,7 @@ class MapComponent extends PureComponent {
       dispatchSetCurrentStopsGeoJSON([...currentStopsGeoJSON]);
     });
 
-    const modify = new Modify({
+    this.modifyInteraction = new Modify({
       source: this.routeVectorSource,
       pixelTolerance: 4,
       style: () => {
@@ -170,7 +171,7 @@ class MapComponent extends PureComponent {
       },
     });
 
-    modify.on('modifystart', (evt) => {
+    this.modifyInteraction.on('modifystart', (evt) => {
       // save start point to find where to add the new HOP!
       this.initialRouteDrag = {
         features: evt.features.getArray(),
@@ -179,7 +180,7 @@ class MapComponent extends PureComponent {
       this.map.getTargetElement().style.cursor = 'grabbing';
     });
 
-    modify.on('modifyend', (evt) => {
+    this.modifyInteraction.on('modifyend', (evt) => {
       const {
         tracks,
         floorInfo,
@@ -272,7 +273,10 @@ class MapComponent extends PureComponent {
       this.map.getTargetElement().style.cursor = 'auto';
     });
 
-    const interactions = defaultInteractions().extend([modify, translate]);
+    const interactions = defaultInteractions().extend([
+      this.modifyInteraction,
+      this.translateInteraction,
+    ]);
     interactions.getArray().forEach((interaction) => {
       this.map.addInteraction(interaction);
     });
@@ -433,6 +437,10 @@ class MapComponent extends PureComponent {
     }
   }
 
+  componentWillUnmount() {
+    unByKey(this.modifyOverlayListener);
+  }
+
   onPanViaClick(item, idx) {
     const { currentStopsGeoJSON } = this.props;
     if (currentStopsGeoJSON && currentStopsGeoJSON[idx]) {
@@ -502,12 +510,7 @@ class MapComponent extends PureComponent {
       generalizationGraph,
     } = this.props;
 
-    const hops = getViaStrings(
-      currentStopsGeoJSON,
-      currentMot,
-      floorInfo,
-      tracks,
-    );
+    const hops = getViaStrings(currentStopsGeoJSON, currentMot, tracks);
 
     abortController.abort();
     abortController = new AbortController();
@@ -535,6 +538,9 @@ class MapComponent extends PureComponent {
         `&barrierefrei=${searchMode === 'barrier-free' ? 'true' : 'false'}`;
       if (graph) {
         reqUrl += `&graph=${graph}`;
+      }
+      if (currentMot === 'foot') {
+        reqUrl += `&levels=${floorInfo.join('|')}`;
       }
       return fetch(reqUrl, { signal })
         .then((response) => response.json())
@@ -695,6 +701,13 @@ class MapComponent extends PureComponent {
         }
       }
     });
+
+    this.modifyOverlayListener = this.map
+      .getViewport()
+      .addEventListener('mouseleave', () => {
+        const overlaySource = this.modifyInteraction.getOverlay().getSource();
+        overlaySource.clear();
+      });
   }
 
   /**

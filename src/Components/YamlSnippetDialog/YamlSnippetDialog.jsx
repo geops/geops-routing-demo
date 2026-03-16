@@ -38,12 +38,7 @@ function YamlSnippetDialog() {
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
   const viaString = useMemo(() => {
-    return getViaStrings(
-      currentStopsGeoJSON,
-      currentMot,
-      floorInfo,
-      tracks,
-    ).join('|');
+    return getViaStrings(currentStopsGeoJSON, currentMot, tracks).join('|');
   }, [currentStopsGeoJSON, currentMot, floorInfo, tracks]);
 
   const expectedViaPoints = useMemo(() => {
@@ -179,12 +174,9 @@ function YamlSnippetDialog() {
                   const coord = to4326(
                     feat.getGeometry().getCoordinates(),
                   ).slice();
-                  const floor =
-                    currentMot === 'foot' &&
-                    `$${parseFloat(feat.get('floor') || '0', 10).toFixed(0)}`;
                   return (
                     <div key={coord} data-testid={`expected-viastring-${idx}`}>
-                      {'    '}- {`${coord.join(',')}${floor || ''}`}
+                      {'    '}- {`${coord.join(',')}`}
                     </div>
                   );
                 })}
