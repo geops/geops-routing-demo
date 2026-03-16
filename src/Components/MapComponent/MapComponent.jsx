@@ -90,7 +90,6 @@ class MapComponent extends PureComponent {
     });
     this.routeVectorSource = routingLayer.getSource();
     this.markerVectorSource = markerLayer.getSource();
-    this.highlightVectorSource = highlightLayer.getSource();
     routingLayer.setStyle((feature) => {
       const { currentMot, activeFloor } = this.props;
       return lineStyleFunction(
