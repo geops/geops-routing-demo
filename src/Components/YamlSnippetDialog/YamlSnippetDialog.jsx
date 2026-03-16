@@ -209,7 +209,7 @@ function YamlSnippetDialog() {
                   {expectedViaPoints.map((feat, idx) => {
                     return (
                       <div
-                        key={feat.getId()}
+                        key={feat.ol_uid}
                         data-testid={`expected-level-${idx}`}
                       >
                         {'    '}- {feat.get('floor').toFixed(0)}
