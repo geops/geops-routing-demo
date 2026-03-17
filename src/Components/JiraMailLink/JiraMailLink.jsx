@@ -15,7 +15,7 @@ function JiraMailLink({
   const mailUrl = useMemo(() => {
     const subject = encodeURIComponent(`Routing issue - ${mot}`);
 
-    const indent = '\u00A0\u00A0\u00A0'; // 3 non-breaking spaces
+    const indent = '\u00A0\u00A0\u00A0';
 
     const bodyLines = [
       'Hello geOps-Team.',
