@@ -1,8 +1,6 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { IconButton, Paper, Tooltip, useMediaQuery } from '@mui/material';
 import { Translate } from 'ol/interaction';
-import { Vector as VectorLayer } from 'ol/layer';
-import { Vector as VectorSource } from 'ol/source';
 import { LineString, Point } from 'ol/geom';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSelector, useDispatch } from 'react-redux';
@@ -22,7 +20,11 @@ const expectedViaPointStyle = new Style({
   }),
 });
 
-const debugSource = new VectorSource({});
+function sortByFraction(featA, featB) {
+  const fractionA = featA.get('fraction');
+  const fractionB = featB.get('fraction');
+  return fractionA - fractionB;
+}
 
 function YamlSnippetDialog() {
   const dispatch = useDispatch();
@@ -30,21 +32,18 @@ function YamlSnippetDialog() {
     selectedRoutes,
     currentStopsGeoJSON,
     currentMot,
-    floorInfo,
     tracks,
     olMap: map,
     generalizationGraph,
+    debugLayer,
+    routingLayer,
   } = useSelector((state) => state.MapReducer);
   const isDesktop = useMediaQuery('(min-width: 768px)');
+  const [debugPointCoords, setDebugPointCoords] = useState([]);
 
   const viaString = useMemo(() => {
-    return getViaStrings(
-      currentStopsGeoJSON,
-      currentMot,
-      floorInfo,
-      tracks,
-    ).join('|');
-  }, [currentStopsGeoJSON, currentMot, floorInfo, tracks]);
+    return getViaStrings(currentStopsGeoJSON, currentMot, tracks).join('|');
+  }, [currentStopsGeoJSON, currentMot, tracks]);
 
   const expectedViaPoints = useMemo(() => {
     if (!selectedRoutes.length) return [];
@@ -68,22 +67,24 @@ function YamlSnippetDialog() {
         const pointFeature = new Feature({
           geometry: new Point(coord),
         });
+        const closestRoute = routingLayer
+          .getSource()
+          .getClosestFeatureToCoordinate(
+            pointFeature.getGeometry().getCoordinates(),
+          );
+        pointFeature.set(
+          'floor',
+          parseInt(closestRoute?.get('floor') || 0, 10),
+        );
+        pointFeature.set('fraction', fraction);
+        pointFeature.setStyle(expectedViaPointStyle);
         return [...finalPoints, pointFeature];
       },
       [],
     );
-    debugSource.clear();
-    debugSource.addFeatures(selectedRoutes);
-    features.forEach((feat) => {
-      const closestRoute = debugSource.getClosestFeatureToCoordinate(
-        feat.getGeometry().getCoordinates(),
-      );
-      feat.set('floor', closestRoute.get('floor'));
-      feat.setStyle(expectedViaPointStyle);
-    });
-    debugSource.clear();
+
     return features;
-  }, [selectedRoutes]);
+  }, [selectedRoutes, routingLayer]);
 
   const distance = useMemo(() => {
     return selectedRoutes.reduce((total, currentRoute) => {
@@ -92,28 +93,37 @@ function YamlSnippetDialog() {
   }, [selectedRoutes]);
 
   useEffect(() => {
-    const debugLayer = new VectorLayer({
-      zIndex: 999,
-      source: debugSource,
-    });
     const translate = new Translate({
       layers: [debugLayer],
       hitTolerance: 6,
     });
-    if (map) {
-      map.addInteraction(translate);
-    }
-    map.addLayer(debugLayer);
+    translate.on('translateend', () => {
+      setDebugPointCoords(
+        debugLayer
+          .getSource()
+          .getFeatures()
+          .sort(sortByFraction)
+          .map((feat) => feat.getGeometry().getCoordinates()),
+      );
+    });
+    map?.addInteraction(translate);
     return () => {
-      map.removeLayer(debugLayer);
-      map.removeInteraction(translate);
+      map?.removeInteraction(translate);
+      debugLayer.getSource().clear();
     };
-  }, [map]);
+  }, [map, debugLayer]);
 
   useEffect(() => {
-    debugSource.clear();
-    debugSource.addFeatures(expectedViaPoints);
-  }, [expectedViaPoints, map]);
+    debugLayer.getSource().clear();
+    debugLayer.getSource().addFeatures(expectedViaPoints);
+    setDebugPointCoords(
+      debugLayer
+        .getSource()
+        .getFeatures()
+        .sort(sortByFraction)
+        .map((feat) => feat.getGeometry().getCoordinates()),
+    );
+  }, [expectedViaPoints, map, debugLayer]);
 
   if (!isDesktop) return null;
 
@@ -175,21 +185,37 @@ function YamlSnippetDialog() {
               {'  '}
               <b>expect_via:</b>{' '}
               <span>
-                {expectedViaPoints.map((feat, idx) => {
-                  const coord = to4326(
-                    feat.getGeometry().getCoordinates(),
-                  ).slice();
-                  const floor =
-                    currentMot === 'foot' &&
-                    `$${parseFloat(feat.get('floor') || '0', 10).toFixed(0)}`;
+                {debugPointCoords.map((coord, idx) => {
+                  const transformedCoord = to4326(coord).join(',');
                   return (
-                    <div key={coord} data-testid={`expected-viastring-${idx}`}>
-                      {'    '}- {`${coord.join(',')}${floor || ''}`}
+                    <div
+                      key={transformedCoord}
+                      data-testid={`expected-viastring-${idx}`}
+                    >
+                      {'    '}- {`${transformedCoord}`}
                     </div>
                   );
                 })}
               </span>
             </div>
+            {currentMot === 'foot' ? (
+              <div>
+                {'  '}
+                <b>expect_levels:</b>{' '}
+                <span>
+                  {expectedViaPoints.map((feat, idx) => {
+                    return (
+                      <div
+                        key={feat.ol_uid}
+                        data-testid={`expected-level-${idx}`}
+                      >
+                        {'    '}- {feat.get('floor').toFixed(0)}
+                      </div>
+                    );
+                  })}
+                </span>
+              </div>
+            ) : null}
             <div>
               {'  '}
               <b>min_km:</b>{' '}
