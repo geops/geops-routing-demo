@@ -18,8 +18,7 @@ function JiraMailLink({
     const indent = '\u00A0\u00A0\u00A0';
 
     const bodyLines = [
-      'Hello geOps-Team',
-      'Please test and revise this routing case:',
+      '[Please add some description of the bug and what is expected. If possible add screenshots and drwaings of the expected paths or add images of the situaiton in the real world.]',
       '',
       '-----',
       `${mot}-xx:`,
@@ -50,14 +49,11 @@ function JiraMailLink({
       `${indent}min_km: ${minKm}`,
       `${indent}max_km: ${maxKm}`,
       '-----',
-      '',
-      'Thank you very much and best regards',
-      'Your routing tester',
     );
 
     const body = encodeURIComponent(bodyLines.join('\r\n'));
 
-    return `mailto:jira@geops.ch?subject=${subject}&body=${body}`;
+    return `mailto:routing-issue@geops.ch?subject=${subject}&body=${body}`;
   }, [
     mot,
     expectedVias,
