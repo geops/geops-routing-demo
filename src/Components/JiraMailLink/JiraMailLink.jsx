@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { Button } from '@mui/material';
+import { Button, Tooltip } from '@mui/material';
 import Mail from '@mui/icons-material/Mail';
 
 function JiraMailLink({
@@ -69,16 +69,27 @@ function JiraMailLink({
   ]);
 
   return (
-    <Button
-      component="a"
-      href={mailUrl}
-      rel="noopener noreferrer"
-      target="_blank"
-      sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.6 }}
-    >
-      <Mail fontSize="small" />
-      Report issue
-    </Button>
+    <div style={{ display: 'flex', justifyContent: 'end' }}>
+      <Tooltip
+        title="Report this case by email to the geOps team"
+        placement="bottom"
+      >
+        <Button
+          component="a"
+          href={mailUrl}
+          rel="noopener noreferrer"
+          target="_blank"
+          sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.6,
+          }}
+        >
+          <Mail fontSize="small" />
+          Report issue
+        </Button>
+      </Tooltip>
+    </div>
   );
 }
 
