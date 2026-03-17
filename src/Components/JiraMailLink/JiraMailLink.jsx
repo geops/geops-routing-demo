@@ -36,7 +36,7 @@ function JiraMailLink({
     }
 
     if (expectedLevels?.length) {
-      bodyLines.push(`${indent}expect_level:`);
+      bodyLines.push(`${indent}expect_levels:`);
       expectedLevels.forEach((l) => {
         bodyLines.push(`${indent}${indent}- ${l}`);
       });
