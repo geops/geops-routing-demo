@@ -18,7 +18,7 @@ function JiraMailLink({
     const indent = '\u00A0\u00A0\u00A0';
 
     const bodyLines = [
-      'Hello geOps-Team.',
+      'Hello geOps-Team',
       'Please test and revise this routing case:',
       '',
       '-----',
@@ -43,18 +43,12 @@ function JiraMailLink({
     }
 
     if (generalizationGraph) {
-      bodyLines.push(`${indent}generalization_graph: ${generalizationGraph}`);
-    }
-
-    if (minKm) {
-      bodyLines.push(`${indent}min_km: ${minKm}`);
-    }
-
-    if (maxKm) {
-      bodyLines.push(`${indent}max_km: ${maxKm}`);
+      bodyLines.push(`${indent}graph: ${generalizationGraph}`);
     }
 
     bodyLines.push(
+      `${indent}min_km: ${minKm}`,
+      `${indent}max_km: ${maxKm}`,
       '-----',
       '',
       'Thank you very much and best regards',
@@ -94,8 +88,8 @@ JiraMailLink.propTypes = {
   expectedVias: PropTypes.arrayOf(PropTypes.string),
   expectedLevels: PropTypes.arrayOf(PropTypes.string),
   generalizationGraph: PropTypes.string,
-  minKm: PropTypes.string,
-  maxKm: PropTypes.string,
+  minKm: PropTypes.string.isRequired,
+  maxKm: PropTypes.string.isRequired,
 };
 
 export default JiraMailLink;
