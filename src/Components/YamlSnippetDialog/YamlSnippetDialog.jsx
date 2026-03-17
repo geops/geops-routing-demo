@@ -252,6 +252,7 @@ function YamlSnippetDialog() {
             <JiraMailLink
               mot={currentMot}
               via={viaString}
+              levels={levelsString}
               expectedVias={debugPointCoords}
               expectedLevels={
                 currentMot === 'foot'

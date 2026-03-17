@@ -6,6 +6,7 @@ import Mail from '@mui/icons-material/Mail';
 function JiraMailLink({
   mot,
   via,
+  levels,
   expectedVias,
   expectedLevels,
   generalizationGraph,
@@ -24,8 +25,12 @@ function JiraMailLink({
       `${mot}-xx:`,
       `${indent}description: Fill out`,
       `${indent}mot: ${mot}`,
-      `${indent}via: ${via}`,
+      `${indent}via: '${via}'`,
     ];
+
+    if (levels) {
+      bodyLines.push(`${indent}levels: '${levels}'`);
+    }
 
     if (expectedVias?.length) {
       bodyLines.push(`${indent}expect_via:`);
@@ -48,6 +53,7 @@ function JiraMailLink({
     bodyLines.push(
       `${indent}min_km: ${minKm}`,
       `${indent}max_km: ${maxKm}`,
+      `${indent}max_via_distance: 2.0`,
       '-----',
     );
 
@@ -56,6 +62,7 @@ function JiraMailLink({
     return `mailto:routing-issue@geops.ch?subject=${subject}&body=${body}`;
   }, [
     mot,
+    levels,
     expectedVias,
     expectedLevels,
     generalizationGraph,
@@ -90,6 +97,7 @@ function JiraMailLink({
 JiraMailLink.propTypes = {
   mot: PropTypes.string.isRequired,
   via: PropTypes.string.isRequired,
+  levels: PropTypes.string,
   expectedVias: PropTypes.arrayOf(PropTypes.string),
   expectedLevels: PropTypes.arrayOf(PropTypes.string),
   generalizationGraph: PropTypes.string,
