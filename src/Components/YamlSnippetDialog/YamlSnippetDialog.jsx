@@ -45,6 +45,7 @@ function YamlSnippetDialog() {
     generalizationGraph,
     debugLayer,
     routingLayer,
+    floorInfo,
   } = useSelector((state) => state.MapReducer);
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [debugPointCoords, setDebugPointCoords] = useState([]);
@@ -52,6 +53,10 @@ function YamlSnippetDialog() {
   const viaString = useMemo(() => {
     return getViaStrings(currentStopsGeoJSON, currentMot, tracks).join('|');
   }, [currentStopsGeoJSON, currentMot, tracks]);
+
+  const levelsString = useMemo(() => {
+    return currentMot === 'foot' ? floorInfo.join('|') : '';
+  }, [currentMot, floorInfo]);
 
   const expectedViaPoints = useMemo(() => {
     if (!selectedRoutes.length) return [];
@@ -177,6 +182,13 @@ function YamlSnippetDialog() {
               <b>via:</b>{' '}
               <span data-testid="viaString">&apos;{viaString}&apos;</span>
             </div>
+            {levelsString && (
+              <div>
+                {'  '}
+                <b>levels:</b>{' '}
+                <span data-testid="levels">&apos;{levelsString}&apos;</span>
+              </div>
+            )}
             <div>
               {'  '}
               <b>expect_via:</b>{' '}
@@ -221,6 +233,11 @@ function YamlSnippetDialog() {
               <span data-testid="max_km">
                 {((distance * 1.03) / 1000).toFixed(3)}
               </span>
+            </div>
+            <div>
+              {'  '}
+              <b>max_via_distance:</b>{' '}
+              <span data-testid="max_via_distance">2.0</span>
             </div>
             {generalizationGraph ? (
               <div>
