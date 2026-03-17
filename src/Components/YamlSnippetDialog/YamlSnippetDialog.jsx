@@ -9,6 +9,7 @@ import { Style, Stroke, RegularShape } from 'ol/style';
 import { to4326 } from '../../utils';
 import { setYamlSnippetDialogOpen } from '../../store/actions/Map';
 import getViaStrings from '../../utils/getViaStrings';
+import JiraMailLink from '../JiraMailLink';
 
 const expectedViaPointStyle = new Style({
   image: new RegularShape({
@@ -24,6 +25,13 @@ function sortByFraction(featA, featB) {
   const fractionA = featA.get('fraction');
   const fractionB = featB.get('fraction');
   return fractionA - fractionB;
+}
+
+function getExpectedViaString(source) {
+  return source
+    .getFeatures()
+    .sort(sortByFraction)
+    .map((feat) => to4326(feat.getGeometry().getCoordinates()).join(','));
 }
 
 function YamlSnippetDialog() {
@@ -98,13 +106,7 @@ function YamlSnippetDialog() {
       hitTolerance: 6,
     });
     translate.on('translateend', () => {
-      setDebugPointCoords(
-        debugLayer
-          .getSource()
-          .getFeatures()
-          .sort(sortByFraction)
-          .map((feat) => feat.getGeometry().getCoordinates()),
-      );
+      setDebugPointCoords(getExpectedViaString(debugLayer.getSource()));
     });
     map?.addInteraction(translate);
     return () => {
@@ -116,13 +118,7 @@ function YamlSnippetDialog() {
   useEffect(() => {
     debugLayer.getSource().clear();
     debugLayer.getSource().addFeatures(expectedViaPoints);
-    setDebugPointCoords(
-      debugLayer
-        .getSource()
-        .getFeatures()
-        .sort(sortByFraction)
-        .map((feat) => feat.getGeometry().getCoordinates()),
-    );
+    setDebugPointCoords(getExpectedViaString(debugLayer.getSource()));
   }, [expectedViaPoints, map, debugLayer]);
 
   if (!isDesktop) return null;
@@ -186,13 +182,9 @@ function YamlSnippetDialog() {
               <b>expect_via:</b>{' '}
               <span>
                 {debugPointCoords.map((coord, idx) => {
-                  const transformedCoord = to4326(coord).join(',');
                   return (
-                    <div
-                      key={transformedCoord}
-                      data-testid={`expected-viastring-${idx}`}
-                    >
-                      {'    '}- {`${transformedCoord}`}
+                    <div key={coord} data-testid={`expected-viastring-${idx}`}>
+                      {'    '}- {`${coord}`}
                     </div>
                   );
                 })}
@@ -238,6 +230,20 @@ function YamlSnippetDialog() {
               </div>
             ) : null}
           </div>
+          <br />
+          <JiraMailLink
+            mot={currentMot}
+            via={viaString}
+            expectedVias={debugPointCoords}
+            expectedLevels={
+              currentMot === 'foot'
+                ? expectedViaPoints.map((feat) => feat.get('floor').toFixed(0))
+                : []
+            }
+            generalizationGraph={generalizationGraph}
+            minKm={(distance / 1.03 / 1000).toFixed(3)}
+            maxKm={((distance * 1.03) / 1000).toFixed(3)}
+          />
         </div>
       </Paper>
     </div>

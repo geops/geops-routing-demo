@@ -33,6 +33,7 @@ const theme = createTheme({
     },
   },
   typography: {
+    fontFamily: '"Inter", "Roboto", sans-serif',
     body: { fontSize },
     button: { fontSize, color: 'red' },
     h1: { fontSize: '1.2rem', color },
@@ -41,6 +42,7 @@ const theme = createTheme({
     h4: { fontSize, color },
     h5: { fontSize, color },
     h6: { fontSize, color },
+    a: { fontSize, color },
   },
   components: {
     MuiButton: {
