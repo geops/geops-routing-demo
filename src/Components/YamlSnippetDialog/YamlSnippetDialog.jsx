@@ -231,19 +231,23 @@ function YamlSnippetDialog() {
             ) : null}
           </div>
           <br />
-          <JiraMailLink
-            mot={currentMot}
-            via={viaString}
-            expectedVias={debugPointCoords}
-            expectedLevels={
-              currentMot === 'foot'
-                ? expectedViaPoints.map((feat) => feat.get('floor').toFixed(0))
-                : []
-            }
-            generalizationGraph={generalizationGraph}
-            minKm={(distance / 1.03 / 1000).toFixed(3)}
-            maxKm={((distance * 1.03) / 1000).toFixed(3)}
-          />
+          <div style={{ display: 'flex', justifyContent: 'end' }}>
+            <JiraMailLink
+              mot={currentMot}
+              via={viaString}
+              expectedVias={debugPointCoords}
+              expectedLevels={
+                currentMot === 'foot'
+                  ? expectedViaPoints.map((feat) =>
+                      feat.get('floor').toFixed(0),
+                    )
+                  : []
+              }
+              generalizationGraph={generalizationGraph}
+              minKm={(distance / 1.03 / 1000).toFixed(3)}
+              maxKm={((distance * 1.03) / 1000).toFixed(3)}
+            />
+          </div>
         </div>
       </Paper>
     </div>

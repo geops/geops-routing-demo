@@ -65,27 +65,25 @@ function JiraMailLink({
   ]);
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'end' }}>
-      <Tooltip
-        title="Report this case by email to the geOps team"
-        placement="bottom"
+    <Tooltip
+      title="Report this case by email to the geOps team"
+      placement="bottom"
+    >
+      <Button
+        component="a"
+        href={mailUrl}
+        rel="noopener noreferrer"
+        target="_blank"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.6,
+        }}
       >
-        <Button
-          component="a"
-          href={mailUrl}
-          rel="noopener noreferrer"
-          target="_blank"
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.6,
-          }}
-        >
-          <Mail fontSize="small" />
-          Report issue
-        </Button>
-      </Tooltip>
-    </div>
+        <Mail fontSize="small" />
+        Report issue
+      </Button>
+    </Tooltip>
   );
 }
 
