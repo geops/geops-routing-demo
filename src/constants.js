@@ -18,7 +18,9 @@ export const OTHER_MOTS = [
 
 export const VALID_MOTS = [...DEFAULT_MOTS, ...OTHER_MOTS];
 
-export const SEARCH_MODES = ['default', 'barrier-free'];
+export const DEFAULT_SEARCH_MODE = 'default';
+export const BARRIERFREE_SEARCH_MODE = 'barrier-free';
+export const SEARCH_MODES = [DEFAULT_SEARCH_MODE, BARRIERFREE_SEARCH_MODE];
 
 export const FLOOR_LEVELS = [-6, -5, -4, -3, -2, -1, 0, '2D', 1, 2, 3, 4, 5, 6];
 

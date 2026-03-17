@@ -10,6 +10,7 @@ import { to4326 } from '../../utils';
 import { setYamlSnippetDialogOpen } from '../../store/actions/Map';
 import getViaStrings from '../../utils/getViaStrings';
 import JiraMailLink from '../JiraMailLink';
+import { BARRIERFREE_SEARCH_MODE } from '../../constants';
 
 const expectedViaPointStyle = new Style({
   image: new RegularShape({
@@ -46,17 +47,17 @@ function YamlSnippetDialog() {
     debugLayer,
     routingLayer,
     floorInfo,
+    searchMode,
   } = useSelector((state) => state.MapReducer);
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [debugPointCoords, setDebugPointCoords] = useState([]);
+  const isFootRouting = currentMot === 'foot';
 
   const viaString = useMemo(() => {
     return getViaStrings(currentStopsGeoJSON, currentMot, tracks).join('|');
   }, [currentStopsGeoJSON, currentMot, tracks]);
 
-  const levelsString = useMemo(() => {
-    return currentMot === 'foot' ? floorInfo.join('|') : '';
-  }, [currentMot, floorInfo]);
+  const levelsString = useMemo(() => floorInfo.join('|'), [floorInfo]);
 
   const expectedViaPoints = useMemo(() => {
     if (!selectedRoutes.length) return [];
@@ -182,11 +183,18 @@ function YamlSnippetDialog() {
               <b>via:</b>{' '}
               <span data-testid="viaString">&apos;{viaString}&apos;</span>
             </div>
-            {levelsString && (
+            {isFootRouting && levelsString && (
               <div>
                 {'  '}
                 <b>levels:</b>{' '}
                 <span data-testid="levels">&apos;{levelsString}&apos;</span>
+              </div>
+            )}
+            {isFootRouting && searchMode === BARRIERFREE_SEARCH_MODE && (
+              <div>
+                {'  '}
+                <b>barrier-free:</b>{' '}
+                <span data-testid="barrier-free">true</span>
               </div>
             )}
             <div>
@@ -202,7 +210,7 @@ function YamlSnippetDialog() {
                 })}
               </span>
             </div>
-            {currentMot === 'foot' ? (
+            {isFootRouting ? (
               <div>
                 {'  '}
                 <b>expect_levels:</b>{' '}
@@ -252,10 +260,10 @@ function YamlSnippetDialog() {
             <JiraMailLink
               mot={currentMot}
               via={viaString}
-              levels={levelsString}
+              levels={isFootRouting ? levelsString : undefined}
               expectedVias={debugPointCoords}
               expectedLevels={
-                currentMot === 'foot'
+                isFootRouting
                   ? expectedViaPoints.map((feat) =>
                       feat.get('floor').toFixed(0),
                     )
@@ -264,6 +272,9 @@ function YamlSnippetDialog() {
               generalizationGraph={generalizationGraph}
               minKm={(distance / 1.03 / 1000).toFixed(3)}
               maxKm={((distance * 1.03) / 1000).toFixed(3)}
+              barrierFree={
+                isFootRouting && searchMode === BARRIERFREE_SEARCH_MODE
+              }
             />
           </div>
         </div>
