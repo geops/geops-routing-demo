@@ -32,7 +32,9 @@ function getExpectedViaString(source) {
   return source
     .getFeatures()
     .sort(sortByFraction)
-    .map((feat) => to4326(feat.getGeometry().getCoordinates()).join(','));
+    .map((feat) =>
+      to4326(feat.getGeometry().getCoordinates().slice(0, 2)).join(','),
+    );
 }
 
 function YamlSnippetDialog() {
