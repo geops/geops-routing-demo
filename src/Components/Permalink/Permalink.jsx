@@ -240,7 +240,7 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
         dispatch(setMode('dev'));
       }
 
-      if (barrierfreeParam) {
+      if (barrierfreeParam === 'true') {
         dispatch(setSearchMode(BARRIERFREE_SEARCH_MODE));
       }
     }

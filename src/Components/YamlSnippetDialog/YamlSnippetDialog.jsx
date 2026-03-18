@@ -193,7 +193,7 @@ function YamlSnippetDialog() {
             {isFootRouting && searchMode === BARRIERFREE_SEARCH_MODE && (
               <div>
                 {'  '}
-                <b>barrier-free:</b>{' '}
+                <b>barrierefrei:</b>{' '}
                 <span data-testid="barrier-free">true</span>
               </div>
             )}
@@ -242,11 +242,13 @@ function YamlSnippetDialog() {
                 {((distance * 1.03) / 1000).toFixed(3)}
               </span>
             </div>
-            <div>
-              {'  '}
-              <b>max_via_distance:</b>{' '}
-              <span data-testid="max_via_distance">2.0</span>
-            </div>
+            {isFootRouting ? (
+              <div>
+                {'  '}
+                <b>max_via_distance:</b>{' '}
+                <span data-testid="max_via_distance">2.0</span>
+              </div>
+            ) : null}
             {generalizationGraph ? (
               <div>
                 {'  '}
@@ -275,6 +277,7 @@ function YamlSnippetDialog() {
               barrierFree={
                 isFootRouting && searchMode === BARRIERFREE_SEARCH_MODE
               }
+              maxViaDistance={isFootRouting ? '2.0' : undefined}
             />
           </div>
         </div>
