@@ -17,8 +17,10 @@ import {
   setTracks,
   setMode,
   setStyle,
+  setSearchMode,
   setZoom,
 } from '../../store/actions/Map';
+import { BARRIERFREE_SEARCH_MODE } from '../../constants';
 
 const abortController = new AbortController();
 const { signal } = abortController;
@@ -112,6 +114,7 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
   const dispatch = useDispatch();
   const urlSearch = new URLSearchParams(window.location.search);
   const center = useSelector((state) => state.MapReducer.center);
+  const searchMode = useSelector((state) => state.MapReducer.searchMode);
   const tracks = useSelector((state) => state.MapReducer.tracks);
   const appState = useSelector((state) => state.MapReducer);
   const currentMot = useSelector((state) => state.MapReducer.currentMot);
@@ -147,6 +150,7 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
       const graphParam = urlSearch.get('graph');
       const modeParam = urlSearch.get('mode');
       const styleParam = urlSearch.get('style');
+      const barrierfreeParam = urlSearch.get(BARRIERFREE_SEARCH_MODE);
 
       if (styleParam) {
         dispatch(setStyle(styleParam));
@@ -235,6 +239,10 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
       if (modeParam === 'dev') {
         dispatch(setMode('dev'));
       }
+
+      if (barrierfreeParam === 'true') {
+        dispatch(setSearchMode(BARRIERFREE_SEARCH_MODE));
+      }
     }
     setParams(newParams);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -275,10 +283,10 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
       newParams.mode = undefined;
     }
 
-    if (mode) {
-      newParams.mode = mode;
+    if (searchMode === BARRIERFREE_SEARCH_MODE) {
+      newParams[BARRIERFREE_SEARCH_MODE] = true;
     } else {
-      newParams.mode = undefined;
+      newParams[BARRIERFREE_SEARCH_MODE] = undefined;
     }
 
     setParams(newParams);
@@ -294,6 +302,7 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
     map,
     tracks,
     mode,
+    searchMode,
   ]);
 
   return <RSPermalink map={map} params={params} />;

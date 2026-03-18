@@ -1,5 +1,4 @@
 import React from 'react';
-import { vi } from 'vitest';
 import thunk from 'redux-thunk';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
@@ -8,10 +7,6 @@ import { Map } from 'ol';
 import Permalink from './Permalink';
 
 describe('Permalink', () => {
-  const setState = vi.fn();
-  const useStateSpy = vi.spyOn(React, 'useState');
-  useStateSpy.mockImplementation((init) => [init, setState]);
-
   const mockStore = configureStore([thunk]);
   let store;
 
@@ -30,10 +25,6 @@ describe('Permalink', () => {
         tracks: [null, null],
       },
     });
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
   });
 
   it('should not dispatch search params in default state', () => {
@@ -59,7 +50,7 @@ describe('Permalink', () => {
 
   it('should dispatch defined URL search params', () => {
     const searchString =
-      '?via=!7e7dbbe3be4bc3a6|!a4dca961d199ff76&mot=bus&resolve-hops=true&elevation=2';
+      '?via=!7e7dbbe3be4bc3a6|!a4dca961d199ff76&mot=bus&resolve-hops=true&elevation=2&barrier-free=true';
 
     Object.defineProperty(window, 'location', {
       value: {
@@ -86,6 +77,11 @@ describe('Permalink', () => {
     expect(store.getActions()[2]).toEqual({
       type: 'SET_RESOLVE_HOPS',
       resolveHops: true,
+    });
+
+    expect(store.getActions()[3]).toEqual({
+      type: 'SET_SEARCH_MODE',
+      searchMode: 'barrier-free',
     });
   });
 });

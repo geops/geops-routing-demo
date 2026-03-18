@@ -34,7 +34,11 @@ import {
   propTypeCurrentStops,
   propTypeCurrentStopsGeoJSON,
 } from '../../store/prop-types';
-import { DACH_EXTENT, EUROPE_EXTENT } from '../../constants';
+import {
+  DACH_EXTENT,
+  EUROPE_EXTENT,
+  BARRIERFREE_SEARCH_MODE,
+} from '../../constants';
 import * as actions from '../../store/actions';
 import 'ol/ol.css';
 
@@ -47,6 +51,7 @@ import 'ol/ol.css';
  * @property {Object} currentStopsGeoJSON The current stops defined by user in geojson format inside a dictionary, key is the stop index(order) and the value is the geoJSON itself.
  * @property {function} dispatchShowNotification A store action that can be dispatched, takes the notification message and type as arguments.
  * @property {function} dispatchSetClickLocation A store action that can be dispatched, takes the clicked location on map array of [long,lat] and stores it in the store.
+ * @property {string} searchMode The current search mode, example 'barrier-free'.
  * @category Props
  */
 
@@ -529,7 +534,7 @@ class MapComponent extends PureComponent {
         `&elevation=${calculateElevation ? 1 : 0}` +
         `&interpolate_elevation=${calculateElevation}` +
         `&length=true&coord-radius=100.0&coord-punish=1000.0` +
-        `&barrierefrei=${searchMode === 'barrier-free' ? 'true' : 'false'}`;
+        `&barrierefrei=${searchMode === BARRIERFREE_SEARCH_MODE ? 'true' : 'false'}`;
       if (graph) {
         reqUrl += `&graph=${graph}`;
       }

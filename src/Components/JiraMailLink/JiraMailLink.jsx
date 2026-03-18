@@ -12,6 +12,8 @@ function JiraMailLink({
   generalizationGraph,
   minKm,
   maxKm,
+  barrierFree,
+  maxViaDistance,
 }) {
   const mailUrl = useMemo(() => {
     const subject = encodeURIComponent(`Routing issue - ${mot}`);
@@ -27,6 +29,10 @@ function JiraMailLink({
       `${indent}mot: ${mot}`,
       `${indent}via: '${via}'`,
     ];
+
+    if (barrierFree) {
+      bodyLines.push(`${indent}barrierefrei: true`);
+    }
 
     if (levels) {
       bodyLines.push(`${indent}levels: '${levels}'`);
@@ -50,10 +56,13 @@ function JiraMailLink({
       bodyLines.push(`${indent}graph: ${generalizationGraph}`);
     }
 
+    if (maxViaDistance) {
+      bodyLines.push(`${indent}max_via_distance: ${maxViaDistance}`);
+    }
+
     bodyLines.push(
       `${indent}min_km: ${minKm}`,
       `${indent}max_km: ${maxKm}`,
-      `${indent}max_via_distance: 2.0`,
       '-----',
     );
 
@@ -69,6 +78,8 @@ function JiraMailLink({
     minKm,
     maxKm,
     via,
+    barrierFree,
+    maxViaDistance,
   ]);
 
   return (
@@ -103,6 +114,8 @@ JiraMailLink.propTypes = {
   generalizationGraph: PropTypes.string,
   minKm: PropTypes.string.isRequired,
   maxKm: PropTypes.string.isRequired,
+  barrierFree: PropTypes.bool,
+  maxViaDistance: PropTypes.string,
 };
 
 export default JiraMailLink;

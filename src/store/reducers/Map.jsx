@@ -4,7 +4,11 @@ import { Vector as VectorLayer, Group } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
 import LevelLayer from '../../layers/LevelLayer';
 import * as actionTypes from '../actions/actionTypes';
-import { SEARCH_MODES, EUROPE_EXTENT, FLOOR_LEVELS } from '../../constants';
+import {
+  DEFAULT_SEARCH_MODE,
+  EUROPE_EXTENT,
+  FLOOR_LEVELS,
+} from '../../constants';
 
 const apiKey = import.meta.env.VITE_API_KEY;
 
@@ -102,7 +106,7 @@ const initialState = {
     controls: [],
   }),
   resolveHops: false,
-  searchMode: SEARCH_MODES[0],
+  searchMode: DEFAULT_SEARCH_MODE,
   tracks: [null, null],
   generalizationEnabled: false,
   generalizationGraph: null,
