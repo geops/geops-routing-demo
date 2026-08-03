@@ -1,13 +1,13 @@
-/* eslint-disable no-undef */
-import mapReducer from './Map';
 import * as types from '../actions/actionTypes';
+
+import mapReducer from './Map';
 
 describe('map reducer', () => {
   it('should return the initial state', () => {
     const test = {
       center: [949042.143189, 5899715.591163],
+      clickLocation: null,
       currentMot: 'rail',
-      floorInfo: ['0', '0'],
       currentStops: ['', ''],
       currentStopsGeoJSON: [],
       dialogPosition: {
@@ -18,13 +18,13 @@ describe('map reducer', () => {
         height: 550,
         width: 500,
       },
-      clickLocation: null,
+      floorInfo: ['0', '0'],
+      isFieldFocused: false,
       notificationMessage: '',
       notificationType: 'info',
-      isFieldFocused: false,
-      showLoadingBar: false,
       resolveHops: false,
       selectedRoutes: [],
+      showLoadingBar: false,
     };
     Object.keys(test).forEach((state) => {
       expect(mapReducer(undefined, {})[state]).toEqual(test[state]);
@@ -36,8 +36,8 @@ describe('map reducer', () => {
       mapReducer(
         {},
         {
-          type: types.SET_CURRENT_MOT,
           currentMot: 'bus',
+          type: types.SET_CURRENT_MOT,
         },
       ),
     ).toEqual({ currentMot: 'bus', isRouteInfoOpen: false });
@@ -48,8 +48,8 @@ describe('map reducer', () => {
       mapReducer(
         { currentMot: 'bus' },
         {
-          type: types.SET_CURRENT_MOT,
           currentMot: 'train',
+          type: types.SET_CURRENT_MOT,
         },
       ),
     ).toEqual({
@@ -61,28 +61,28 @@ describe('map reducer', () => {
   it('should handle SET_CURRENT_STOPS_GEOJSON', () => {
     // Create GeoJSON
     const tempGeoJSON = {
-      type: 'FeatureCollection',
       features: [
         {
-          type: 'Feature',
+          geometry: {
+            coordinates: [25, 25],
+            type: 'Point',
+          },
           properties: {
             id: [25, 25].slice().reverse(),
             type: 'coordinates',
           },
-          geometry: {
-            type: 'Point',
-            coordinates: [25, 25],
-          },
+          type: 'Feature',
         },
       ],
+      type: 'FeatureCollection',
     };
     const currentStopsGeoJSON = [tempGeoJSON];
     expect(
       mapReducer(
         {},
         {
-          type: types.SET_CURRENT_STOPS_GEOJSON,
           currentStopsGeoJSON,
+          type: types.SET_CURRENT_STOPS_GEOJSON,
         },
       ),
     ).toEqual({ currentStopsGeoJSON });
@@ -93,8 +93,8 @@ describe('map reducer', () => {
       mapReducer(
         {},
         {
-          type: types.SET_CLICK_LOCATION,
           clickLocation: [25, 25],
+          type: types.SET_CLICK_LOCATION,
         },
       ),
     ).toEqual({ clickLocation: [25, 25] });
@@ -105,9 +105,9 @@ describe('map reducer', () => {
       mapReducer(
         {},
         {
-          type: types.SHOW_NOTIFICATION,
           notificationMessage: 'Notification Message',
           notificationType: 'error',
+          type: types.SHOW_NOTIFICATION,
         },
       ),
     ).toEqual({

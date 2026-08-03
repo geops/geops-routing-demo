@@ -1,19 +1,19 @@
-import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
-import { Button, Tooltip } from '@mui/material';
 import Mail from '@mui/icons-material/Mail';
+import { Button, Tooltip } from '@mui/material';
+import PropTypes from 'prop-types';
+import React, { useMemo } from 'react';
 
 function JiraMailLink({
+  barrierFree,
+  expectedLevels,
+  expectedVias,
+  generalizationGraph,
+  levels,
+  maxKm,
+  maxViaDistance,
+  minKm,
   mot,
   via,
-  levels,
-  expectedVias,
-  expectedLevels,
-  generalizationGraph,
-  minKm,
-  maxKm,
-  barrierFree,
-  maxViaDistance,
 }) {
   const mailUrl = useMemo(() => {
     const subject = encodeURIComponent(`Routing issue - ${mot}`);
@@ -84,19 +84,19 @@ function JiraMailLink({
 
   return (
     <Tooltip
-      title="Report this case by email to the geOps team"
       placement="bottom"
+      title="Report this case by email to the geOps team"
     >
       <Button
         component="a"
         href={mailUrl}
         rel="noopener noreferrer"
-        target="_blank"
         sx={{
-          display: 'inline-flex',
           alignItems: 'center',
+          display: 'inline-flex',
           gap: 0.6,
         }}
+        target="_blank"
       >
         <Mail fontSize="small" />
         Report issue
@@ -106,16 +106,16 @@ function JiraMailLink({
 }
 
 JiraMailLink.propTypes = {
+  barrierFree: PropTypes.bool,
+  expectedLevels: PropTypes.arrayOf(PropTypes.string),
+  expectedVias: PropTypes.arrayOf(PropTypes.string),
+  generalizationGraph: PropTypes.string,
+  levels: PropTypes.string,
+  maxKm: PropTypes.string.isRequired,
+  maxViaDistance: PropTypes.string,
+  minKm: PropTypes.string.isRequired,
   mot: PropTypes.string.isRequired,
   via: PropTypes.string.isRequired,
-  levels: PropTypes.string,
-  expectedVias: PropTypes.arrayOf(PropTypes.string),
-  expectedLevels: PropTypes.arrayOf(PropTypes.string),
-  generalizationGraph: PropTypes.string,
-  minKm: PropTypes.string.isRequired,
-  maxKm: PropTypes.string.isRequired,
-  barrierFree: PropTypes.bool,
-  maxViaDistance: PropTypes.string,
 };
 
 export default JiraMailLink;

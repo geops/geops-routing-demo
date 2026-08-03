@@ -1,21 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
-import Popup from 'react-spatial/components/Popup';
-import { containsCoordinate } from 'ol/extent';
-import IconButton from '@mui/material/IconButton';
-import './MapFloorSwitcher.scss';
-import { Feature } from 'ol';
-import { Point } from 'ol/geom';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import IconButton from '@mui/material/IconButton';
 import Typography from '@mui/material/Typography';
+import { Feature } from 'ol';
+import { containsCoordinate } from 'ol/extent';
+import { Point } from 'ol/geom';
 import { unByKey } from 'ol/Observable';
+import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import Popup from 'react-spatial/components/Popup';
+
 import { setActiveFloor } from '../../store/actions/Map';
 
+import './MapFloorSwitcher.scss';
+
 const propTypes = {
-  route: PropTypes.instanceOf(Feature).isRequired,
   nextRoute: PropTypes.instanceOf(Feature).isRequired,
+  route: PropTypes.instanceOf(Feature).isRequired,
 };
 
 const shouldDisplayButton = (map, coord) => {
@@ -25,10 +27,14 @@ const shouldDisplayButton = (map, coord) => {
   );
 };
 
-function MapFloorSwitcher({ route, nextRoute }) {
+function MapFloorSwitcher({ nextRoute, route }) {
   const dispatch = useDispatch();
-  const map = useSelector((state) => state.MapReducer.olMap);
-  const activeFloor = useSelector((state) => state.MapReducer.activeFloor);
+  const map = useSelector((state) => {
+    return state.MapReducer.olMap;
+  });
+  const activeFloor = useSelector((state) => {
+    return state.MapReducer.activeFloor;
+  });
   const coord = route.getGeometry().getLastCoordinate();
   const [isInExtent, setInExtent] = useState(shouldDisplayButton(map, coord));
 
@@ -75,17 +81,17 @@ function MapFloorSwitcher({ route, nextRoute }) {
   );
 
   return (
-    <Popup map={map} feature={feature} className="map-floor-switcher">
+    <Popup className="map-floor-switcher" feature={feature} map={map}>
       <div>
         <Typography variant="body2">{intNextFloor}</Typography>
       </div>
       <div>
         <IconButton
-          sx={{
-            padding: 0,
-          }}
           onClick={() => {
             dispatch(setActiveFloor(`${intNextFloor}`));
+          }}
+          sx={{
+            padding: 0,
           }}
         >
           {directionIcon}

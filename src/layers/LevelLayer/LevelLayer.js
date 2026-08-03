@@ -51,7 +51,6 @@ class LevelLayer extends MaplibreStyleLayer {
       const metadata = this.styleLayersFilter(styleLayer);
 
       if (!metadata) {
-        // eslint-disable-next-line no-continue
         continue;
       }
 
@@ -94,7 +93,9 @@ class LevelLayer extends MaplibreStyleLayer {
             !this.get('parent')
               .getLayers()
               .getArray()
-              .find((child) => child.level !== '2D' && child.visible)
+              .find((child) => {
+                return child.level !== '2D' && child.visible;
+              })
           ) {
             mbMap.setLayoutProperty(styleLayer.id, 'visibility', 'none');
           }
@@ -107,9 +108,9 @@ class LevelLayer extends MaplibreStyleLayer {
         } else if (this.visible) {
           mbMap.setLayoutProperty(styleLayer.id, 'visibility', 'none');
         }
-        const areAllHidden = !this.get('parent')?.children.some(
-          (l) => l.visible,
-        );
+        const areAllHidden = !this.get('parent')?.children.some((l) => {
+          return l.visible;
+        });
         if (areAllHidden) {
           mbMap.setLayoutProperty(styleLayer.id, 'visibility', 'none');
         }

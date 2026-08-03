@@ -1,28 +1,35 @@
-import React, { useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import PropTypes from 'prop-types';
+import React, { useMemo } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { setTracks } from '../../store/actions/Map';
 
 const propTypes = {
-  index: PropTypes.number.isRequired,
   disabled: PropTypes.bool.isRequired,
+  index: PropTypes.number.isRequired,
 };
 
 /**
  * The component that displays the track selector
  */
-function TrackSelect({ index, disabled }) {
+function TrackSelect({ disabled, index }) {
   const dispatch = useDispatch();
-  const tracks = useSelector((state) => state.MapReducer.tracks);
-  const currentMot = useSelector((state) => state.MapReducer.currentMot);
-  const currentStopsGeoJSON = useSelector(
-    (state) => state.MapReducer.currentStopsGeoJSON,
-  );
-  const track = useMemo(() => tracks[index], [index, tracks]);
+  const tracks = useSelector((state) => {
+    return state.MapReducer.tracks;
+  });
+  const currentMot = useSelector((state) => {
+    return state.MapReducer.currentMot;
+  });
+  const currentStopsGeoJSON = useSelector((state) => {
+    return state.MapReducer.currentStopsGeoJSON;
+  });
+  const track = useMemo(() => {
+    return tracks[index];
+  }, [index, tracks]);
 
   const tracksValues = useMemo(() => {
     return currentStopsGeoJSON[index] &&
@@ -41,27 +48,29 @@ function TrackSelect({ index, disabled }) {
   }, [index, currentMot, currentStopsGeoJSON]);
 
   return (
-    <FormControl variant="standard" fullWidth>
-      <InputLabel shrink id="rd-track-select-label">
+    <FormControl fullWidth variant="standard">
+      <InputLabel id="rd-track-select-label" shrink>
         Track
       </InputLabel>
       <Select
-        renderValue={(val) => (val === '' ? '-' : val)}
-        labelId="rd-track-select-label"
-        value={track || ''}
-        displayEmpty
         disabled={disabled || !tracksValues.length}
+        displayEmpty
+        labelId="rd-track-select-label"
         onChange={(evt) => {
           const newTracks = [...tracks];
           const { value } = evt.target;
           newTracks[index] = value;
           dispatch(setTracks(newTracks));
         }}
+        renderValue={(val) => {
+          return val === '' ? '-' : val;
+        }}
         style={{ textAlign: 'center' }}
+        value={track || ''}
       >
         {tracksValues.map((t) => {
           return (
-            <MenuItem value={t} key={`track-${t}`}>
+            <MenuItem key={`track-${t}`} value={t}>
               {t === '' ? '-' : t}
             </MenuItem>
           );

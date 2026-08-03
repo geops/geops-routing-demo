@@ -1,9 +1,10 @@
-import React from 'react';
-import thunk from 'redux-thunk';
-import { Provider } from 'react-redux';
-import configureStore from 'redux-mock-store';
 import { render } from '@testing-library/react';
 import { Map } from 'ol';
+import React from 'react';
+import { Provider } from 'react-redux';
+import configureStore from 'redux-mock-store';
+import thunk from 'redux-thunk';
+
 import Permalink from './Permalink';
 
 describe('Permalink', () => {
@@ -15,13 +16,13 @@ describe('Permalink', () => {
       MapReducer: {
         center: [0, 0],
         currentMot: 'rail',
-        resolveHops: false,
         currentStops: ['', ''],
-        floorInfo: [null, null],
         currentStopsGeoJSON: [],
+        floorInfo: [null, null],
         olMap: new Map({
           controls: [],
         }),
+        resolveHops: false,
         tracks: [null, null],
       },
     });
@@ -38,8 +39,8 @@ describe('Permalink', () => {
     render(
       <Provider store={store}>
         <Permalink
-          mots={['rail', 'bus']}
           APIKey="foobar"
+          mots={['rail', 'bus']}
           stationSearchUrl="https://foo.bar"
         />
       </Provider>,
@@ -62,26 +63,26 @@ describe('Permalink', () => {
     render(
       <Provider store={store}>
         <Permalink
-          mots={['rail', 'bus']}
           APIKey="foobar"
+          mots={['rail', 'bus']}
           stationSearchUrl="https://foo.bar"
         />
       </Provider>,
     );
 
     expect(store.getActions()[0]).toEqual({
-      type: 'SET_CURRENT_MOT',
       currentMot: 'bus',
+      type: 'SET_CURRENT_MOT',
     });
 
     expect(store.getActions()[2]).toEqual({
-      type: 'SET_RESOLVE_HOPS',
       resolveHops: true,
+      type: 'SET_RESOLVE_HOPS',
     });
 
     expect(store.getActions()[3]).toEqual({
-      type: 'SET_SEARCH_MODE',
       searchMode: 'barrier-free',
+      type: 'SET_SEARCH_MODE',
     });
   });
 });

@@ -1,16 +1,17 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import { Button } from '@mui/material';
+import PropTypes from 'prop-types';
+import React from 'react';
 
 import { floorsColor } from '../../config/styleConfig';
+
 import './FloorButton.scss';
 
 const propTypes = {
   active: PropTypes.bool,
+  children: PropTypes.any,
   floor: PropTypes.string.isRequired,
   isMobile: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
-  children: PropTypes.any,
 };
 
 function getFloorStyle(active, floor) {
@@ -20,11 +21,11 @@ function getFloorStyle(active, floor) {
 }
 
 function FloorButton({
-  floor,
-  onClick,
   active = false,
   children = null,
+  floor,
   isMobile = false,
+  onClick,
 }) {
   const mobileInfo = isMobile && (
     <div className="tm-mobile-floor-info">Floor</div>
@@ -33,7 +34,9 @@ function FloorButton({
     <div className="tm-floor-button-wrapper">
       <Button
         className={`tm-button tm-square-white${active ? ' tm-active' : ''}`}
-        onClick={() => onClick(floor)}
+        onClick={() => {
+          return onClick(floor);
+        }}
         style={getFloorStyle(active, floor)}
       >
         {mobileInfo}

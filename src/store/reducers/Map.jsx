@@ -1,70 +1,74 @@
-import { Map } from 'ol';
 import { MaplibreLayer } from 'mobility-toolbox-js/ol';
-import { Vector as VectorLayer, Group } from 'ol/layer';
+import { Map } from 'ol';
+import { Group, Vector as VectorLayer } from 'ol/layer';
 import { Vector as VectorSource } from 'ol/source';
-import LevelLayer from '../../layers/LevelLayer';
-import * as actionTypes from '../actions/actionTypes';
+
 import {
   DEFAULT_SEARCH_MODE,
   EUROPE_EXTENT,
   FLOOR_LEVELS,
 } from '../../constants';
+import LevelLayer from '../../layers/LevelLayer';
+import * as actionTypes from '../actions/actionTypes';
 
 const apiKey = import.meta.env.VITE_API_KEY;
 
 const baseLayer = new MaplibreLayer({
-  name: 'data',
-  visible: true,
-  style: 'travic_v2',
   apiKey,
+  name: 'data',
+  style: 'travic_v2',
+  visible: true,
 });
 
 export const debugLayer = new VectorLayer({
-  zIndex: 999,
   source: new VectorSource({}),
+  zIndex: 999,
 });
 
 const highlightLayer = new VectorLayer({
   key: 'highlightLayer',
   name: 'highlightLayer',
-  zIndex: 1,
   source: new VectorSource({}),
+  zIndex: 1,
 });
 
 export const routeVectorLayer = new VectorLayer({
   key: 'routeLayer',
   name: 'routeLayer',
-  zIndex: 1,
   source: new VectorSource({
     features: [],
   }),
+  zIndex: 1,
 });
 
 const markerVectorLayer = new VectorLayer({
-  zIndex: 1,
-  source: new VectorSource({}),
   key: 'markerLayer',
   name: 'markerLayer',
+  source: new VectorSource({}),
+  zIndex: 1,
 });
 
 const levelLayers = FLOOR_LEVELS.map((level) => {
   return new LevelLayer({
-    name: `ch.sbb.geschosse${level}`,
-    visible: level === '2D',
-    mapboxLayer: baseLayer,
-    styleLayersFilter: ({ metadata }) =>
-      metadata &&
-      (metadata['geops.filter'] === '2D' ||
-        metadata['geops.filter'] === 'level') &&
-      // Return the filter if it exists
-      metadata['geops.filter'],
     level,
+    mapboxLayer: baseLayer,
+    name: `ch.sbb.geschosse${level}`,
+    styleLayersFilter: ({ metadata }) => {
+      return (
+        metadata &&
+        (metadata['geops.filter'] === '2D' ||
+          metadata['geops.filter'] === 'level') &&
+        // Return the filter if it exists
+        metadata['geops.filter']
+      );
+    },
+    visible: level === '2D',
   });
 });
 const geschosseLayer = new Group({
+  layers: levelLayers,
   name: 'ch.sbb.geschosse',
   visible: true,
-  layers: levelLayers,
 });
 levelLayers.forEach((layer) => {
   layer.set('parent', geschosseLayer);
@@ -80,20 +84,15 @@ const layers = [
 ];
 
 const initialState = {
-  center: [949042.143189, 5899715.591163],
-  maxExtent: EUROPE_EXTENT,
   activeFloor: '2D',
+  apiKey,
+  baseLayer,
+  center: [949042.143189, 5899715.591163],
+  clickLocation: null,
   currentMot: 'rail',
-  floorInfo: ['0', '0'],
   currentStops: ['', ''],
   currentStopsGeoJSON: [],
-  clickLocation: null,
-  notificationMessage: '',
-  notificationType: 'info',
-  isFieldFocused: false,
-  showLoadingBar: false,
-  selectedRoutes: [],
-  isRouteInfoOpen: false,
+  debugLayer,
   dialogPosition: {
     x: 10,
     y: 280,
@@ -102,27 +101,32 @@ const initialState = {
     height: 550,
     width: 500,
   },
+  floorInfo: ['0', '0'],
+  generalizationActive: false,
+  generalizationEnabled: false,
+  generalizationGraph: null,
+  geschosseLayer,
+  highlightLayer,
+  isDesktop: true,
+  isFieldFocused: false,
+  isRouteInfoOpen: false,
+  layers,
+  markerLayer: markerVectorLayer,
+  maxExtent: EUROPE_EXTENT,
+  mode: undefined,
+  notificationMessage: '',
+  notificationType: 'info',
   olMap: new Map({
     controls: [],
   }),
   resolveHops: false,
-  searchMode: DEFAULT_SEARCH_MODE,
-  tracks: [null, null],
-  generalizationEnabled: false,
-  generalizationGraph: null,
-  generalizationActive: false,
-  zoom: 6,
-  mode: undefined,
-  yamlSnippetDialogOpen: false,
-  isDesktop: true,
-  apiKey,
-  layers,
   routingLayer: routeVectorLayer,
-  markerLayer: markerVectorLayer,
-  geschosseLayer,
-  baseLayer,
-  highlightLayer,
-  debugLayer,
+  searchMode: DEFAULT_SEARCH_MODE,
+  selectedRoutes: [],
+  showLoadingBar: false,
+  tracks: [null, null],
+  yamlSnippetDialogOpen: false,
+  zoom: 6,
 };
 
 const setZoom = (state, action) => {
@@ -268,13 +272,13 @@ const setDialogPosition = (state, action) => {
 const setDialogSize = (state, action) => {
   return {
     ...state,
-    dialogSize: {
-      height: action.dialogSize.height,
-      width: action.dialogSize.width,
-    },
     dialogPosition: {
       x: action.dialogSize.x,
       y: action.dialogSize.y,
+    },
+    dialogSize: {
+      height: action.dialogSize.height,
+      width: action.dialogSize.width,
     },
   };
 };
@@ -291,8 +295,8 @@ const setResolveHops = (state, action) => {
 
 const setTracks = (state, action) => {
   const updatedState = {
-    tracks: action.tracks,
     isRouteInfoOpen: false,
+    tracks: action.tracks,
   };
   return {
     ...state,
@@ -302,8 +306,8 @@ const setTracks = (state, action) => {
 
 const setSearchMode = (state, action) => {
   const updatedState = {
-    searchMode: action.searchMode,
     isRouteInfoOpen: false,
+    searchMode: action.searchMode,
   };
   return {
     ...state,
@@ -324,10 +328,10 @@ const setMaxExtent = (state, action) => {
 const setGeneralizationEnabled = (state, action) => {
   return {
     ...state,
-    generalizationEnabled: action.generalizationEnabled,
     generalizationActive: !action.generalizationEnabled
       ? false
       : state.generalizationActive,
+    generalizationEnabled: action.generalizationEnabled,
   };
 };
 
@@ -366,59 +370,58 @@ const setStyle = (state, action) => {
   };
 };
 
-// eslint-disable-next-line default-param-last
 const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case actionTypes.SET_ZOOM:
-      return setZoom(state, action);
-    case actionTypes.SET_CENTER:
-      return setCenter(state, action);
     case actionTypes.SET_ACTIVE_FLOOR:
       return setActiveFloor(state, action);
-    case actionTypes.SET_FLOOR_INFO:
-      return setFloorInfo(state, action);
+    case actionTypes.SET_CENTER:
+      return setCenter(state, action);
+    case actionTypes.SET_CLICK_LOCATION:
+      return setClickLocation(state, action);
+    case actionTypes.SET_CURRENT_MOT:
+      return setCurrentMot(state, action);
     case actionTypes.SET_CURRENT_STOPS:
       return setCurrentStops(state, action);
     case actionTypes.SET_CURRENT_STOPS_GEOJSON:
       return setCurrentStopsGeoJSON(state, action);
-    case actionTypes.SET_CURRENT_MOT:
-      return setCurrentMot(state, action);
-    case actionTypes.SET_CLICK_LOCATION:
-      return setClickLocation(state, action);
-    case actionTypes.SHOW_NOTIFICATION:
-      return showNotification(state, action);
-    case actionTypes.SET_IS_FIELD_FOCUSED:
-      return setIsFieldFocused(state, action);
-    case actionTypes.SET_SHOW_LOADING_BAR:
-      return setShowLoadingBar(state, action);
-    case actionTypes.SET_SELECTED_ROUTES:
-      return setSelectedRoutes(state, action);
-    case actionTypes.SET_IS_ROUTE_INFO_OPEN:
-      return setIsRouteInfoOpen(state, action);
+    case actionTypes.SET_DEBUG_DIALOG_OPEN:
+      return setYamlSnippetDialogOpen(state, action);
     case actionTypes.SET_DIALOG_POSITION:
       return setDialogPosition(state, action);
     case actionTypes.SET_DIALOG_SIZE:
       return setDialogSize(state, action);
-    case actionTypes.SET_SEARCH_MODE:
-      return setSearchMode(state, action);
-    case actionTypes.SET_RESOLVE_HOPS:
-      return setResolveHops(state, action);
-    case actionTypes.SET_TRACKS:
-      return setTracks(state, action);
-    case actionTypes.SET_MAX_EXTENT:
-      return setMaxExtent(state, action);
+    case actionTypes.SET_FLOOR_INFO:
+      return setFloorInfo(state, action);
+    case actionTypes.SET_GENERALIZATION_ACTIVE:
+      return setGeneralizationActive(state, action);
     case actionTypes.SET_GENERALIZATION_ENABLED:
       return setGeneralizationEnabled(state, action);
     case actionTypes.SET_GENERALIZATION_GRAPH:
       return setGeneralizationGraph(state, action);
-    case actionTypes.SET_GENERALIZATION_ACTIVE:
-      return setGeneralizationActive(state, action);
+    case actionTypes.SET_IS_FIELD_FOCUSED:
+      return setIsFieldFocused(state, action);
+    case actionTypes.SET_IS_ROUTE_INFO_OPEN:
+      return setIsRouteInfoOpen(state, action);
+    case actionTypes.SET_MAX_EXTENT:
+      return setMaxExtent(state, action);
     case actionTypes.SET_MODE:
       return setMode(state, action);
-    case actionTypes.SET_DEBUG_DIALOG_OPEN:
-      return setYamlSnippetDialogOpen(state, action);
+    case actionTypes.SET_RESOLVE_HOPS:
+      return setResolveHops(state, action);
+    case actionTypes.SET_SEARCH_MODE:
+      return setSearchMode(state, action);
+    case actionTypes.SET_SELECTED_ROUTES:
+      return setSelectedRoutes(state, action);
+    case actionTypes.SET_SHOW_LOADING_BAR:
+      return setShowLoadingBar(state, action);
     case actionTypes.SET_STYLE:
       return setStyle(state, action);
+    case actionTypes.SET_TRACKS:
+      return setTracks(state, action);
+    case actionTypes.SET_ZOOM:
+      return setZoom(state, action);
+    case actionTypes.SHOW_NOTIFICATION:
+      return showNotification(state, action);
     default:
       return state;
   }

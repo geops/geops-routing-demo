@@ -1,46 +1,46 @@
-/* eslint-disable no-undef */
-import * as actions from './index';
 import * as types from './actionTypes';
+
+import * as actions from './index';
 
 describe('actions', () => {
   it('should create an action to set the current mot', () => {
     const currentMot = 'bus';
     const expectedAction = {
-      type: types.SET_CURRENT_MOT,
       currentMot,
+      type: types.SET_CURRENT_MOT,
     };
     expect(actions.setCurrentMot(currentMot)).toEqual(expectedAction);
   });
   it('should create an action to set the click location', () => {
     const clickLocation = [25, 25];
     const expectedAction = {
-      type: types.SET_CLICK_LOCATION,
       clickLocation,
+      type: types.SET_CLICK_LOCATION,
     };
     expect(actions.setClickLocation(clickLocation)).toEqual(expectedAction);
   });
   it('should create an action to set the current stops GeoJSON', () => {
     // Create GeoJSON
     const tempGeoJSON = {
-      type: 'FeatureCollection',
       features: [
         {
-          type: 'Feature',
+          geometry: {
+            coordinates: [25, 25],
+            type: 'Point',
+          },
           properties: {
             id: [25, 25].slice().reverse(),
             type: 'coordinates',
           },
-          geometry: {
-            type: 'Point',
-            coordinates: [25, 25],
-          },
+          type: 'Feature',
         },
       ],
+      type: 'FeatureCollection',
     };
     const currentStopsGeoJSON = [tempGeoJSON];
     const expectedAction = {
-      type: types.SET_CURRENT_STOPS_GEOJSON,
       currentStopsGeoJSON,
+      type: types.SET_CURRENT_STOPS_GEOJSON,
     };
     expect(actions.setCurrentStopsGeoJSON(currentStopsGeoJSON)).toEqual(
       expectedAction,
@@ -50,9 +50,9 @@ describe('actions', () => {
     const notificationMessage = 'Notification Message';
     const notificationType = 'error';
     const expectedAction = {
-      type: types.SHOW_NOTIFICATION,
       notificationMessage,
       notificationType,
+      type: types.SHOW_NOTIFICATION,
     };
     expect(
       actions.showNotification(notificationMessage, notificationType),

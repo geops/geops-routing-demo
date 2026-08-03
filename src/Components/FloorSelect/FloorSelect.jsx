@@ -1,28 +1,35 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import { to4326 } from '../../utils';
+import Select from '@mui/material/Select';
+import PropTypes from 'prop-types';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { WALKING_BASE_URL } from '../../constants';
 import { setFloorInfo, showNotification } from '../../store/actions/Map';
+import { to4326 } from '../../utils';
 
 const propTypes = {
-  index: PropTypes.number.isRequired,
   disabled: PropTypes.bool.isRequired,
+  index: PropTypes.number.isRequired,
   singleStop: PropTypes.oneOfType([PropTypes.string, PropTypes.array]), // array for an array  of coordinate, string for a station name
 };
 
 /**
  * The component that displays the floor selector
  */
-function FloorSelect({ index, disabled, singleStop = null }) {
+function FloorSelect({ disabled, index, singleStop = null }) {
   const dispatch = useDispatch();
-  const floorInfo = useSelector((state) => state.MapReducer.floorInfo);
-  const activeFloor = useSelector((state) => state.MapReducer.activeFloor);
-  const floor = useMemo(() => floorInfo[index], [index, floorInfo]);
+  const floorInfo = useSelector((state) => {
+    return state.MapReducer.floorInfo;
+  });
+  const activeFloor = useSelector((state) => {
+    return state.MapReducer.activeFloor;
+  });
+  const floor = useMemo(() => {
+    return floorInfo[index];
+  }, [index, floorInfo]);
   const [floors, setFloors] = useState([floor || '0']);
 
   useEffect(() => {
@@ -38,7 +45,9 @@ function FloorSelect({ index, disabled, singleStop = null }) {
         .join(',')}&distance=0.03`;
 
       fetch(reqUrl, { signal })
-        .then((response) => response.json())
+        .then((response) => {
+          return response.json();
+        })
         .then((response) => {
           if (response.error) {
             dispatch(
@@ -104,27 +113,29 @@ function FloorSelect({ index, disabled, singleStop = null }) {
   }
 
   return (
-    <FormControl variant="standard" fullWidth>
-      <InputLabel shrink id="rd-floor-select-label">
+    <FormControl fullWidth variant="standard">
+      <InputLabel id="rd-floor-select-label" shrink>
         Floor
       </InputLabel>
       <Select
-        renderValue={(val) => (!val || val === '' ? '0' : val)}
-        labelId="rd-floor-select-label"
-        value={floor}
-        displayEmpty
         disabled={disabled || !floors.length}
+        displayEmpty
+        labelId="rd-floor-select-label"
         onChange={(evt) => {
           const newFloorInfo = [...floorInfo];
           const { value } = evt.target;
           newFloorInfo[index] = value;
           dispatch(setFloorInfo(newFloorInfo));
         }}
+        renderValue={(val) => {
+          return !val || val === '' ? '0' : val;
+        }}
         style={{ textAlign: 'center' }}
+        value={floor}
       >
         {floors.reverse().map((fl) => {
           return (
-            <MenuItem value={fl} key={`floor-${fl}`}>
+            <MenuItem key={`floor-${fl}`} value={fl}>
               {fl === '' ? '0' : fl}
             </MenuItem>
           );

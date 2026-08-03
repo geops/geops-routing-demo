@@ -1,3 +1,11 @@
+import CloseIcon from '@mui/icons-material/Close';
+import IconButton from '@mui/material/IconButton';
+import combine from '@turf/combine';
+import nearestPointOnLine from '@turf/nearest-point-on-line';
+import { Feature } from 'ol';
+import GeoJSON from 'ol/format/GeoJSON';
+import { Point } from 'ol/geom';
+import PropTypes from 'prop-types';
 import React, {
   useCallback,
   useEffect,
@@ -5,36 +13,31 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import PropTypes from 'prop-types';
-import { Feature } from 'ol';
-import GeoJSON from 'ol/format/GeoJSON';
-import { Point } from 'ol/geom';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
-import nearestPointOnLine from '@turf/nearest-point-on-line';
-import combine from '@turf/combine';
+import { useSelector } from 'react-redux';
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
   CartesianGrid,
   Label,
-  Tooltip,
+  Line,
+  LineChart,
   ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
-import { useSelector } from 'react-redux';
+
 import { pointStyleFunction } from '../../config/styleConfig';
+
 import InterpolatedSurface from './InterpolatedSurface';
 import SurfaceElevation from './SurfaceElevation';
+
 import './RouteInfosDialog.scss';
 
 const propTypes = {
   closeInfo: PropTypes.func.isRequired,
-  routes: PropTypes.arrayOf(PropTypes.instanceOf(Feature)).isRequired,
   hoveredCoords: PropTypes.arrayOf(PropTypes.number),
+  routes: PropTypes.arrayOf(PropTypes.instanceOf(Feature)).isRequired,
 };
 
 const tickFormatter = (length, isMeter) => {
@@ -105,11 +108,13 @@ const getHoveredPointFromHoveredCoords = (hovCoords, linePoints, routeLine) => {
   return point;
 };
 
-function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
-  const highlightLayer = useSelector(
-    (state) => state.MapReducer.highlightLayer,
-  );
-  const currentMot = useSelector((state) => state.MapReducer.currentMot);
+function RouteInfosDialog({ closeInfo, hoveredCoords = null, routes }) {
+  const highlightLayer = useSelector((state) => {
+    return state.MapReducer.highlightLayer;
+  });
+  const currentMot = useSelector((state) => {
+    return state.MapReducer.currentMot;
+  });
   const containerRef = useRef();
   const [length, setLength] = useState(1);
   const [minAltitude, setMinAltitude] = useState(0);
@@ -117,14 +122,12 @@ function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
   const [routePoints, setRoutePoints] = useState([]);
   const [distanceUnit, setDistanceUnit] = useState(null);
   const [isMeter, setIsMeter] = useState(null);
-  const highlightSource = useMemo(
-    () => highlightLayer.getSource(),
-    [highlightLayer],
-  );
+  const highlightSource = useMemo(() => {
+    return highlightLayer.getSource();
+  }, [highlightLayer]);
 
   const renderTooltip = useCallback(
-    ({ alt, surfaceElevation, distance }) => {
-      // eslint-disable-next-line consistent-return
+    ({ alt, distance, surfaceElevation }) => {
       return (
         <div className="rd-tootip-wrapper">
           <div>surface elevation: {surfaceElevation} m</div>
@@ -142,14 +145,22 @@ function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
   useEffect(() => {
     const pointArray = [];
     const coords = [].concat(
-      ...routes.map((r) => r.getGeometry().getFlatCoordinates()),
+      ...routes.map((r) => {
+        return r.getGeometry().getFlatCoordinates();
+      }),
     );
     const distances = [].concat(
-      ...routes.map((r) => r.get('vertex_distances')),
+      ...routes.map((r) => {
+        return r.get('vertex_distances');
+      }),
     );
     const lgth = routes
-      .map((r) => r.get('line_length'))
-      .reduce((a, b) => a + b, 0);
+      .map((r) => {
+        return r.get('line_length');
+      })
+      .reduce((a, b) => {
+        return a + b;
+      }, 0);
     setLength(lgth);
     setDistanceUnit(lgth > 1000 ? 'km' : 'm');
     const isMeterValue = lgth <= 1000;
@@ -157,11 +168,15 @@ function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
 
     const xArray = everyNth(coords, 3, 0);
     const yArray = everyNth(coords, 3, 1);
-    const altitudesArray = everyNth(coords, 3, 2).map((el) => Math.round(el));
+    const altitudesArray = everyNth(coords, 3, 2).map((el) => {
+      return Math.round(el);
+    });
     const surfaceElevation = [].concat(
-      ...routes.map((r) =>
-        (r.get('surface_elevations') || []).map((el) => Math.round(el)),
-      ),
+      ...routes.map((r) => {
+        return (r.get('surface_elevations') || []).map((el) => {
+          return Math.round(el);
+        });
+      }),
     );
     setMinAltitude(Math.min(...surfaceElevation.concat(altitudesArray)));
     setMaxAltitude(Math.max(...surfaceElevation.concat(altitudesArray)));
@@ -169,17 +184,16 @@ function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
     altitudesArray.forEach((alt, idx) => {
       pointArray.push({
         alt,
+        distance: distances[idx],
         surfaceElevation: surfaceElevation.length
           ? surfaceElevation[idx]
           : null,
         xVal: xArray[idx],
         yVal: yArray[idx],
-        distance: distances[idx],
       });
     });
 
     setRoutePoints(pointArray);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routes]);
 
   const hoveredPoint = useMemo(() => {
@@ -214,65 +228,60 @@ function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
           <InterpolatedSurface /> interpolated altitude
         </span>
       </div>
-      <ResponsiveContainer width="98%" height="80%">
+      <ResponsiveContainer height="80%" width="98%">
         <LineChart
           data={routePoints}
-          onMouseLeave={() => highlightSource.clear()}
+          onMouseLeave={() => {
+            return highlightSource.clear();
+          }}
         >
           <YAxis
-            type="number"
             axisLine={false}
-            tickLine={false}
             domain={[minAltitude - 10, 'dataMax']}
+            tickLine={false}
+            type="number"
           >
-            <Label value="m" offset={10} position="top" />
+            <Label offset={10} position="top" value="m" />
           </YAxis>
           <XAxis
-            type="number"
             dataKey="distance"
-            tickFormatter={(dist) => tickFormatter(dist, isMeter)}
+            tickFormatter={(dist) => {
+              return tickFormatter(dist, isMeter);
+            }}
+            type="number"
           >
-            <Label value={distanceUnit} offset={10} position="right" />
+            <Label offset={10} position="right" value={distanceUnit} />
           </XAxis>
           <CartesianGrid vertical={false} />
           <Line
-            type="monotone"
             dataKey="alt"
-            name="interpolated altitude"
             dot={false}
+            name="interpolated altitude"
             stroke="#ff7f50"
             strokeWidth={2}
+            type="monotone"
           />
           <Line
-            type="monotone"
             dataKey="surfaceElevation"
-            name="surface elevation"
             dot={false}
+            name="surface elevation"
             stroke="#3f51b5"
             strokeWidth={2}
+            type="monotone"
           />
           {hoveredCoords && hoveredPoint && (
-            <ReferenceLine x={hoveredPoint.distance} stroke="lightgrey" />
+            <ReferenceLine stroke="lightgrey" x={hoveredPoint.distance} />
           )}
           {hoveredCoords && hoveredPoint && (
             <ReferenceDot
+              fill="#3f51b5"
               r={4}
+              stroke="white"
               x={hoveredPoint.distance}
               y={hoveredPoint.alt}
-              fill="#3f51b5"
-              stroke="white"
             />
           )}
           <Tooltip
-            cursor={!!hoveredPoint}
-            position={
-              hoveredPoint
-                ? {
-                    x: getTooltipX(hoveredPoint.distance, length),
-                    y: getTooltipY(hoveredPoint.alt, maxAltitude),
-                  }
-                : null
-            }
             content={(content) => {
               if (hoveredPoint) {
                 // Render toltip is we are hovering the route
@@ -293,6 +302,15 @@ function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
               // Render tooltip is we are hovering  the graph
               return renderTooltip(point);
             }}
+            cursor={!!hoveredPoint}
+            position={
+              hoveredPoint
+                ? {
+                    x: getTooltipX(hoveredPoint.distance, length),
+                    y: getTooltipY(hoveredPoint.alt, maxAltitude),
+                  }
+                : null
+            }
           />
         </LineChart>
       </ResponsiveContainer>

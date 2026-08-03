@@ -1,7 +1,11 @@
 import { to4326 } from './projection';
 
 const getViaStrings = (geoJsonArray, mot, tracks) => {
-  if (geoJsonArray.some((feat) => !feat)) {
+  if (
+    geoJsonArray.some((feat) => {
+      return !feat;
+    })
+  ) {
     return [];
   }
   return geoJsonArray.reduce((result, feat, idx) => {

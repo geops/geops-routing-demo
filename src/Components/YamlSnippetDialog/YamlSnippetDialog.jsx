@@ -1,24 +1,25 @@
-import React, { useMemo, useEffect, useState } from 'react';
-import { IconButton, Paper, Tooltip, useMediaQuery } from '@mui/material';
-import { Translate } from 'ol/interaction';
-import { LineString, Point } from 'ol/geom';
 import CloseIcon from '@mui/icons-material/Close';
-import { useSelector, useDispatch } from 'react-redux';
+import { IconButton, Paper, Tooltip, useMediaQuery } from '@mui/material';
 import { Feature } from 'ol';
-import { Style, Stroke, RegularShape } from 'ol/style';
-import { to4326 } from '../../utils';
+import { LineString, Point } from 'ol/geom';
+import { Translate } from 'ol/interaction';
+import { RegularShape, Stroke, Style } from 'ol/style';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { BARRIERFREE_SEARCH_MODE } from '../../constants';
 import { setYamlSnippetDialogOpen } from '../../store/actions/Map';
+import { to4326 } from '../../utils';
 import getViaStrings from '../../utils/getViaStrings';
 import JiraMailLink from '../JiraMailLink';
-import { BARRIERFREE_SEARCH_MODE } from '../../constants';
 
 const expectedViaPointStyle = new Style({
   image: new RegularShape({
-    stroke: new Stroke({ color: '#000000', width: 4 }),
+    angle: Math.PI / 4,
     points: 4,
     radius: 10,
     radius2: 0,
-    angle: Math.PI / 4,
+    stroke: new Stroke({ color: '#000000', width: 4 }),
   }),
 });
 
@@ -32,25 +33,27 @@ function getExpectedViaString(source) {
   return source
     .getFeatures()
     .sort(sortByFraction)
-    .map((feat) =>
-      to4326(feat.getGeometry().getCoordinates().slice(0, 2)).join(','),
-    );
+    .map((feat) => {
+      return to4326(feat.getGeometry().getCoordinates().slice(0, 2)).join(',');
+    });
 }
 
 function YamlSnippetDialog() {
   const dispatch = useDispatch();
   const {
-    selectedRoutes,
-    currentStopsGeoJSON,
     currentMot,
-    tracks,
-    olMap: map,
-    generalizationGraph,
+    currentStopsGeoJSON,
     debugLayer,
-    routingLayer,
     floorInfo,
+    generalizationGraph,
+    olMap: map,
+    routingLayer,
     searchMode,
-  } = useSelector((state) => state.MapReducer);
+    selectedRoutes,
+    tracks,
+  } = useSelector((state) => {
+    return state.MapReducer;
+  });
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [debugPointCoords, setDebugPointCoords] = useState([]);
   const isFootRouting = currentMot === 'foot';
@@ -59,10 +62,14 @@ function YamlSnippetDialog() {
     return getViaStrings(currentStopsGeoJSON, currentMot, tracks).join('|');
   }, [currentStopsGeoJSON, currentMot, tracks]);
 
-  const levelsString = useMemo(() => floorInfo.join('|'), [floorInfo]);
+  const levelsString = useMemo(() => {
+    return floorInfo.join('|');
+  }, [floorInfo]);
 
   const expectedViaPoints = useMemo(() => {
-    if (!selectedRoutes.length) return [];
+    if (!selectedRoutes.length) {
+      return [];
+    }
     // Combine all route geometries to one LineString
     const concatCoords = selectedRoutes.reduce(
       (finalCoords, currentRoute, idx) => {
@@ -110,8 +117,8 @@ function YamlSnippetDialog() {
 
   useEffect(() => {
     const translate = new Translate({
-      layers: [debugLayer],
       hitTolerance: 6,
+      layers: [debugLayer],
     });
     translate.on('translateend', () => {
       setDebugPointCoords(getExpectedViaString(debugLayer.getSource()));
@@ -129,44 +136,48 @@ function YamlSnippetDialog() {
     setDebugPointCoords(getExpectedViaString(debugLayer.getSource()));
   }, [expectedViaPoints, map, debugLayer]);
 
-  if (!isDesktop) return null;
+  if (!isDesktop) {
+    return null;
+  }
 
   return (
     <div
       style={{
-        position: 'absolute',
         left: 710,
+        position: 'absolute',
         top: 10,
       }}
     >
       <Paper elevation={3} square>
         <Tooltip title="Close">
           <IconButton
-            sx={{ position: 'absolute', right: 5, top: 5 }}
+            onClick={() => {
+              return dispatch(setYamlSnippetDialogOpen(false));
+            }}
             size="small"
-            onClick={() => dispatch(setYamlSnippetDialogOpen(false))}
+            sx={{ position: 'absolute', right: 5, top: 5 }}
           >
             <CloseIcon fontSize="small" />
           </IconButton>
         </Tooltip>
         <div
           style={{
-            padding: 20,
             minHeight: 195,
             minWidth: 250,
+            padding: 20,
           }}
         >
           <div
             style={{
-              marginTop: 15,
-              padding: '15px 10px',
               backgroundColor: '#eeeeee',
-              fontSize: 14,
-              whiteSpace: 'pre',
-              maxWidth: 400,
-              overflowX: 'auto',
               fontFamily:
                 'Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New',
+              fontSize: 14,
+              marginTop: 15,
+              maxWidth: 400,
+              overflowX: 'auto',
+              padding: '15px 10px',
+              whiteSpace: 'pre',
             }}
           >
             <div>
@@ -205,7 +216,7 @@ function YamlSnippetDialog() {
               <span>
                 {debugPointCoords.map((coord, idx) => {
                   return (
-                    <div key={coord} data-testid={`expected-viastring-${idx}`}>
+                    <div data-testid={`expected-viastring-${idx}`} key={coord}>
                       {'    '}- {`${coord}`}
                     </div>
                   );
@@ -220,8 +231,8 @@ function YamlSnippetDialog() {
                   {expectedViaPoints.map((feat, idx) => {
                     return (
                       <div
-                        key={feat.ol_uid}
                         data-testid={`expected-level-${idx}`}
+                        key={feat.ol_uid}
                       >
                         {'    '}- {feat.get('floor').toFixed(0)}
                       </div>
@@ -262,24 +273,24 @@ function YamlSnippetDialog() {
           <br />
           <div style={{ display: 'flex', justifyContent: 'end' }}>
             <JiraMailLink
-              mot={currentMot}
-              via={viaString}
-              levels={isFootRouting ? levelsString : undefined}
-              expectedVias={debugPointCoords}
-              expectedLevels={
-                isFootRouting
-                  ? expectedViaPoints.map((feat) =>
-                      feat.get('floor').toFixed(0),
-                    )
-                  : []
-              }
-              generalizationGraph={generalizationGraph}
-              minKm={(distance / 1.03 / 1000).toFixed(3)}
-              maxKm={((distance * 1.03) / 1000).toFixed(3)}
               barrierFree={
                 isFootRouting && searchMode === BARRIERFREE_SEARCH_MODE
               }
+              expectedLevels={
+                isFootRouting
+                  ? expectedViaPoints.map((feat) => {
+                      return feat.get('floor').toFixed(0);
+                    })
+                  : []
+              }
+              expectedVias={debugPointCoords}
+              generalizationGraph={generalizationGraph}
+              levels={isFootRouting ? levelsString : undefined}
+              maxKm={((distance * 1.03) / 1000).toFixed(3)}
               maxViaDistance={isFootRouting ? '2.0' : undefined}
+              minKm={(distance / 1.03 / 1000).toFixed(3)}
+              mot={currentMot}
+              via={viaString}
             />
           </div>
         </div>

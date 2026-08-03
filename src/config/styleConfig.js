@@ -1,21 +1,22 @@
-import { Style, Circle, Stroke, Fill, Text } from 'ol/style';
+import { Circle, Fill, Stroke, Style, Text } from 'ol/style';
 
 // Convert '0.0' to '0'
-const cleanFloor = (floor) =>
-  // eslint-disable-next-line no-restricted-globals
-  !isNaN(floor) ? parseFloat(floor, 10).toString() : floor;
+const cleanFloor = (floor) => {
+  return !Number.isNaN(Number(floor))
+    ? parseFloat(floor, 10).toString()
+    : floor;
+};
 
 const lineStyler = (lineStyle) => {
-  return lineStyle.map(
-    (style) =>
-      new Style({
-        stroke: new Stroke({
-          color: style[0],
-          width: style[1],
-          lineDash: style[2],
-        }),
+  return lineStyle.map((style) => {
+    return new Style({
+      stroke: new Stroke({
+        color: style[0],
+        lineDash: style[2],
+        width: style[1],
       }),
-  );
+    });
+  });
 };
 
 const railLineStyle = lineStyler([
@@ -50,17 +51,17 @@ const othersLineHoveredStyle = lineStyler([
 
 const railPointStyle = new Style({
   image: new Circle({
-    radius: 7,
     fill: new Fill({ color: 'red' }),
+    radius: 7,
     stroke: new Stroke({ color: 'darkred', width: 2 }),
   }),
 });
 
 export const floorsColor = {
-  '-4': '#CAF0F8',
-  '-3': '#ADE8F4',
-  '-2': '#90E0EF',
   '-1': '#48CAE4',
+  '-2': '#90E0EF',
+  '-3': '#ADE8F4',
+  '-4': '#CAF0F8',
   0: '#00B4D8',
   1: '#0096C7',
   2: '#0077B6',
@@ -69,10 +70,10 @@ export const floorsColor = {
 };
 
 const floorsColorGrey = {
-  '-4': '#E6E6E6',
-  '-3': '#D8D8D8',
-  '-2': '#CACACA',
   '-1': '#A7A7A7',
+  '-2': '#CACACA',
+  '-3': '#D8D8D8',
+  '-4': '#E6E6E6',
   0: '#848484',
   1: '#747474',
   2: '#646464',
@@ -89,28 +90,29 @@ const getPedestrianStyleColor = (floor, activeFloor) => {
   return floorColor || 'black';
 };
 
-const pedestrianGeopsPointStyle = (floor, activeFloor) =>
-  new Style({
+const pedestrianGeopsPointStyle = (floor, activeFloor) => {
+  return new Style({
     image: new Circle({
-      radius: 8,
       fill: new Fill({
         color: getPedestrianStyleColor(floor, activeFloor),
       }),
+      radius: 8,
     }),
   });
+};
 
 const busPointStyle = new Style({
   image: new Circle({
-    radius: 7,
     fill: new Fill({ color: 'yellow' }),
+    radius: 7,
     stroke: new Stroke({ color: 'rgb(153,153,0)', width: 2 }),
   }),
 });
 
 const othersPointStyle = new Style({
   image: new Circle({
-    radius: 7,
     fill: new Fill({ color: 'blue' }),
+    radius: 7,
     stroke: new Stroke({ color: 'darkblue', width: 2 }),
   }),
 });
@@ -144,15 +146,15 @@ const lineStyleFunction = (mot, isHovered, floor, activeFloor, text) => {
   if (text) {
     style[0].setText(
       new Text({
-        text,
-        scale: 2,
         fill: new Fill({
           color: 'white',
         }),
+        scale: 2,
         stroke: new Stroke({
           color: [0, 0, 0],
           width: 2,
         }),
+        text,
       }),
     );
   }

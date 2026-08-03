@@ -1,11 +1,11 @@
 export const graphs = {
-  rail: [null, 'gen100', 'gen30', 'gen10', 'gen5'],
   bus: [null, 'gen100'],
-  tram: [null, 'gen100'],
-  subway: [null, 'gen100'],
-  gondola: [null, 'gen150', 'gen100'],
-  funicular: [null, 'gen150', 'gen100'],
   ferry: [null, 'gen150', 'gen100'],
+  funicular: [null, 'gen150', 'gen100'],
+  gondola: [null, 'gen150', 'gen100'],
+  rail: [null, 'gen100', 'gen30', 'gen10', 'gen5'],
+  subway: [null, 'gen100'],
+  tram: [null, 'gen100'],
 };
 
 export const getGeneralization = (mot, zoom) => {
