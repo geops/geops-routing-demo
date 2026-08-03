@@ -4,15 +4,15 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from 'react';
-import PropTypes from 'prop-types';
-import { Feature } from 'ol';
-import GeoJSON from 'ol/format/GeoJSON';
-import { Point } from 'ol/geom';
-import IconButton from '@mui/material/IconButton';
-import CloseIcon from '@mui/icons-material/Close';
-import nearestPointOnLine from '@turf/nearest-point-on-line';
-import combine from '@turf/combine';
+} from "react";
+import PropTypes from "prop-types";
+import { Feature } from "ol";
+import GeoJSON from "ol/format/GeoJSON";
+import { Point } from "ol/geom";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+import nearestPointOnLine from "@turf/nearest-point-on-line";
+import combine from "@turf/combine";
 import {
   LineChart,
   Line,
@@ -24,12 +24,12 @@ import {
   ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
-} from 'recharts';
-import { useSelector } from 'react-redux';
-import { pointStyleFunction } from '../../config/styleConfig';
-import InterpolatedSurface from './InterpolatedSurface';
-import SurfaceElevation from './SurfaceElevation';
-import './RouteInfosDialog.scss';
+} from "recharts";
+import { useSelector } from "react-redux";
+import { pointStyleFunction } from "../../config/styleConfig";
+import InterpolatedSurface from "./InterpolatedSurface";
+import SurfaceElevation from "./SurfaceElevation";
+import "./RouteInfosDialog.scss";
 
 const propTypes = {
   closeInfo: PropTypes.func.isRequired,
@@ -65,8 +65,8 @@ const getTooltipY = (alt, maxAlt) => {
 };
 
 const format = new GeoJSON({
-  dataProjection: 'EPSG:4326',
-  featureProjection: 'EPSG:3857',
+  dataProjection: "EPSG:4326",
+  featureProjection: "EPSG:3857",
 });
 
 const getHoveredPointFromHoveredCoords = (hovCoords, linePoints, routeLine) => {
@@ -131,7 +131,7 @@ function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
           <div>interpolated altitude: {alt} m</div>
           <div>
             distance: {tickFormatter(distance, isMeter)}
-            {isMeter ? ' m' : ' km'}
+            {isMeter ? " m" : " km"}
           </div>
         </div>
       );
@@ -145,13 +145,13 @@ function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
       ...routes.map((r) => r.getGeometry().getFlatCoordinates()),
     );
     const distances = [].concat(
-      ...routes.map((r) => r.get('vertex_distances')),
+      ...routes.map((r) => r.get("vertex_distances")),
     );
     const lgth = routes
-      .map((r) => r.get('line_length'))
+      .map((r) => r.get("line_length"))
       .reduce((a, b) => a + b, 0);
     setLength(lgth);
-    setDistanceUnit(lgth > 1000 ? 'km' : 'm');
+    setDistanceUnit(lgth > 1000 ? "km" : "m");
     const isMeterValue = lgth <= 1000;
     setIsMeter(isMeterValue);
 
@@ -160,7 +160,7 @@ function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
     const altitudesArray = everyNth(coords, 3, 2).map((el) => Math.round(el));
     const surfaceElevation = [].concat(
       ...routes.map((r) =>
-        (r.get('surface_elevations') || []).map((el) => Math.round(el)),
+        (r.get("surface_elevations") || []).map((el) => Math.round(el)),
       ),
     );
     setMinAltitude(Math.min(...surfaceElevation.concat(altitudesArray)));
@@ -194,7 +194,9 @@ function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
     return null;
   }, [hoveredCoords, routePoints, routes]);
 
-  useEffect(() => containerRef.current.scrollIntoView({ behavior: 'smooth' }));
+  useEffect(() => {
+    containerRef.current.scrollIntoView({ behavior: "smooth" });
+  });
 
   return (
     <div className="rd-info-dialog" ref={containerRef}>
@@ -221,7 +223,7 @@ function RouteInfosDialog({ closeInfo, routes, hoveredCoords = null }) {
             type="number"
             axisLine={false}
             tickLine={false}
-            domain={[minAltitude - 10, 'dataMax']}
+            domain={[minAltitude - 10, "dataMax"]}
           >
             <Label value="m" offset={10} position="top" />
           </YAxis>
