@@ -1,78 +1,79 @@
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import Adjust from '@mui/icons-material/Adjust';
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import Room from '@mui/icons-material/Room';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
+import PropTypes from 'prop-types';
 import React, { useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
-import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
-import IconButton from '@mui/material/IconButton';
-import Tooltip from '@mui/material/Tooltip';
 
-import Adjust from '@mui/icons-material/Adjust';
-import Room from '@mui/icons-material/Room';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked';
-import FloorSelect from '../FloorSelect';
-import TrackSelect from '../TrackSelect';
+import { setIsFieldFocused, setIsRouteInfoOpen } from '../../store/actions/Map';
 import { propTypeCurrentStops } from '../../store/prop-types';
 import { to4326 } from '../../utils';
-import { setIsFieldFocused, setIsRouteInfoOpen } from '../../store/actions/Map';
+import FloorSelect from '../FloorSelect';
+import TrackSelect from '../TrackSelect';
 
 /**
  * The component that displays the search field(s)
  * @category RoutingMenu
  */
 function SearchField({
-  index,
   addNewSearchFieldHandler,
-  currentStops = [],
   currentMot,
+  currentStops = [],
+  index,
+  inputReference,
+  onFieldFocusHandler,
+  onPanViaClick,
+  processHighlightedResultSelectHandler,
   removeSearchFieldHandler,
   searchStopsHandler,
   singleStop = '',
-  processHighlightedResultSelectHandler,
-  onFieldFocusHandler,
-  onPanViaClick,
-  inputReference,
 }) {
   const dispatch = useDispatch();
-  const showLoadingBar = useSelector(
-    (state) => state.MapReducer.showLoadingBar,
-  );
+  const showLoadingBar = useSelector((state) => {
+    return state.MapReducer.showLoadingBar;
+  });
   let fieldLeftIcon = null;
   let searchFieldLabel = '';
 
-  const formatSingleStop = (val) => (Array.isArray(val) ? to4326(val) : val);
-  const isStationName = useMemo(
-    () => typeof singleStop === 'string' && singleStop !== '',
-    [singleStop],
-  );
+  const formatSingleStop = (val) => {
+    return Array.isArray(val) ? to4326(val) : val;
+  };
+  const isStationName = useMemo(() => {
+    return typeof singleStop === 'string' && singleStop !== '';
+  }, [singleStop]);
 
   const addNextHopDisabled =
     currentStops[index] === '' ||
     (currentStops.length > 2 && currentStops[index + 1] === '');
   if (index === 0) {
     // Start station field
-    fieldLeftIcon = <RadioButtonCheckedIcon fontSize="small" color="primary" />;
+    fieldLeftIcon = <RadioButtonCheckedIcon color="primary" fontSize="small" />;
     searchFieldLabel = 'Start';
   } else if (index === currentStops.length - 1) {
     fieldLeftIcon = <Room color="primary" />;
     searchFieldLabel = 'End';
   } else {
-    fieldLeftIcon = <Adjust fontSize="small" color="primary" />;
+    fieldLeftIcon = <Adjust color="primary" fontSize="small" />;
     searchFieldLabel = 'Hop';
   }
   return (
     <Grid
+      alignItems="flex-end"
       container
       spacing={1}
-      alignItems="flex-end"
-      style={{ padding: '2px 0px 2px 0px', flexWrap: 'nowrap' }}
+      style={{ flexWrap: 'nowrap', padding: '2px 0px 2px 0px' }}
     >
       <Grid size={{ xs: 1 }} style={{ minWidth: 35, textAlign: 'right' }}>
         <Tooltip title="Change order of the via points">
           <span>
-            <IconButton aria-label="dragHop" size="small" disabled>
+            <IconButton aria-label="dragHop" disabled size="small">
               <DragIndicatorIcon fontSize="small" />
             </IconButton>
           </span>
@@ -85,7 +86,9 @@ function SearchField({
         <Tooltip title="Pan to the feature">
           <span>
             <IconButton
-              onClick={() => onPanViaClick(singleStop, index)}
+              onClick={() => {
+                return onPanViaClick(singleStop, index);
+              }}
               size="small"
             >
               {fieldLeftIcon}
@@ -95,57 +98,59 @@ function SearchField({
       </Grid>
       <Grid size={{ xs: 7 }} style={{ minWidth: 100 }}>
         <TextField
+          color="primary"
           fullWidth
           inputRef={inputReference}
           label={searchFieldLabel}
-          color="primary"
-          variant="standard"
-          onChange={(e) => searchStopsHandler(e, index)}
-          value={formatSingleStop(singleStop)}
-          onKeyDown={processHighlightedResultSelectHandler}
+          onBlur={() => {
+            return setTimeout(() => {
+              dispatch(setIsFieldFocused(false));
+            }, 500);
+          }}
+          onChange={(e) => {
+            return searchStopsHandler(e, index);
+          }}
+          onClick={(event) => {
+            if (event.target.select) {
+              event.target.select();
+            }
+          }}
           onFocus={() => {
             // We close the route infos dialog otherwise we loose the focus
             dispatch(setIsRouteInfoOpen(false));
             dispatch(setIsFieldFocused(true));
             onFieldFocusHandler(index);
           }}
-          onBlur={() =>
-            setTimeout(() => {
-              dispatch(setIsFieldFocused(false));
-            }, 500)
-          }
-          onClick={(event) => {
-            if (event.target.select) {
-              event.target.select();
-            }
-          }}
+          onKeyDown={processHighlightedResultSelectHandler}
+          value={formatSingleStop(singleStop)}
+          variant="standard"
         />
       </Grid>
-      <Grid size={{ xs: 2 }} style={{ minWidth: 46, maxWidth: 84 }}>
+      <Grid size={{ xs: 2 }} style={{ maxWidth: 84, minWidth: 46 }}>
         {currentMot === 'foot' ? (
           <FloorSelect
-            index={index}
             disabled={isStationName}
+            index={index}
             singleStop={singleStop}
           />
         ) : (
-          <TrackSelect index={index} disabled={!isStationName} />
+          <TrackSelect disabled={!isStationName} index={index} />
         )}
       </Grid>
       <Grid
         size={{ xs: 1 }}
-        style={{ minWidth: 26, maxWidth: 26, textAlign: 'center' }}
+        style={{ maxWidth: 26, minWidth: 26, textAlign: 'center' }}
       >
         {index !== currentStops.length - 1 && (
           <Tooltip title="Add Via Point">
             <span>
               <IconButton
-                onClick={() =>
-                  addNewSearchFieldHandler(currentStops, index + 1)
-                }
                 aria-label="Add Via Point"
-                size="small"
                 disabled={addNextHopDisabled || showLoadingBar}
+                onClick={() => {
+                  return addNewSearchFieldHandler(currentStops, index + 1);
+                }}
+                size="small"
               >
                 <AddCircleOutlineIcon fontSize="small" />
               </IconButton>
@@ -155,16 +160,18 @@ function SearchField({
       </Grid>
       <Grid
         size={{ xs: 1 }}
-        style={{ minWidth: 26, maxWidth: 26, textAlign: 'center' }}
+        style={{ maxWidth: 26, minWidth: 26, textAlign: 'center' }}
       >
         {index !== 0 && index !== currentStops.length - 1 && (
           <Tooltip title="Remove Via Point">
             <span>
               <IconButton
-                onClick={() => removeSearchFieldHandler(index)}
                 aria-label="removeHop"
-                size="small"
                 disabled={showLoadingBar}
+                onClick={() => {
+                  return removeSearchFieldHandler(index);
+                }}
+                size="small"
               >
                 <RemoveCircleOutlineIcon fontSize="small" />
               </IconButton>
@@ -177,23 +184,23 @@ function SearchField({
 }
 
 SearchField.propTypes = {
-  index: PropTypes.number.isRequired,
   addNewSearchFieldHandler: PropTypes.func.isRequired,
-  currentStops: propTypeCurrentStops,
   currentMot: PropTypes.string.isRequired,
+  currentStops: propTypeCurrentStops,
+  index: PropTypes.number.isRequired,
+  inputReference: PropTypes.oneOfType([
+    PropTypes.func,
+    PropTypes.shape({ current: PropTypes.instanceOf(Element) }),
+  ]).isRequired,
+  onFieldFocusHandler: PropTypes.func.isRequired,
+  onPanViaClick: PropTypes.func.isRequired,
+  processHighlightedResultSelectHandler: PropTypes.func.isRequired,
   removeSearchFieldHandler: PropTypes.func.isRequired,
   searchStopsHandler: PropTypes.func.isRequired,
   singleStop: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.arrayOf(PropTypes.number),
   ]),
-  processHighlightedResultSelectHandler: PropTypes.func.isRequired,
-  onFieldFocusHandler: PropTypes.func.isRequired,
-  onPanViaClick: PropTypes.func.isRequired,
-  inputReference: PropTypes.oneOfType([
-    PropTypes.func,
-    PropTypes.shape({ current: PropTypes.instanceOf(Element) }),
-  ]).isRequired,
 };
 
 export default SearchField;

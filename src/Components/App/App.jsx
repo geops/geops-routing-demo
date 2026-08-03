@@ -1,49 +1,33 @@
-import React, { useEffect, useCallback } from 'react';
-import PropTypes from 'prop-types';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { useSelector, useDispatch } from 'react-redux';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { platformModifierKeyOnly } from 'ol/events/condition';
-import Footer from '../Footer';
-import MapComponent from '../MapComponent';
-import Permalink from '../Permalink';
-import NotificationHandler from '../NotificationHandler';
+import PropTypes from 'prop-types';
+import React, { useCallback, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import {
-  setMode,
-  setGeneralizationEnabled,
-  setGeneralizationActive,
-} from '../../store/actions/Map';
-import {
-  VALID_MOTS,
   ROUTING_BASE_URL,
   STATION_SEARCH_BASE_URL,
+  VALID_MOTS,
 } from '../../constants';
+import {
+  setGeneralizationActive,
+  setGeneralizationEnabled,
+  setMode,
+} from '../../store/actions/Map';
+import Footer from '../Footer';
+import MapComponent from '../MapComponent';
+import NotificationHandler from '../NotificationHandler';
+import Permalink from '../Permalink';
 
 const propTypes = {
+  mots: PropTypes.arrayOf(PropTypes.string),
   routingUrl: PropTypes.string,
   stationSearchUrl: PropTypes.string,
-  mots: PropTypes.arrayOf(PropTypes.string),
 };
 
 const fontSize = '1rem';
 const color = '#515151';
 const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#3f51b5',
-    },
-  },
-  typography: {
-    fontFamily: '"Inter", "Roboto", sans-serif',
-    body: { fontSize },
-    button: { fontSize, color: 'red' },
-    h1: { fontSize: '1.2rem', color },
-    h2: { fontSize, color },
-    h3: { fontSize, color },
-    h4: { fontSize, color },
-    h5: { fontSize, color },
-    h6: { fontSize, color },
-    a: { fontSize, color },
-  },
   components: {
     MuiButton: {
       defaultProps: {
@@ -64,6 +48,23 @@ const theme = createTheme({
       },
     },
   },
+  palette: {
+    primary: {
+      main: '#3f51b5',
+    },
+  },
+  typography: {
+    a: { color, fontSize },
+    body: { fontSize },
+    button: { color: 'red', fontSize },
+    fontFamily: '"Inter", "Roboto", sans-serif',
+    h1: { color, fontSize: '1.2rem' },
+    h2: { color, fontSize },
+    h3: { color, fontSize },
+    h4: { color, fontSize },
+    h5: { color, fontSize },
+    h6: { color, fontSize },
+  },
 });
 
 const apiKey = import.meta.env.VITE_API_KEY;
@@ -79,10 +80,12 @@ function App({
   stationSearchUrl = STATION_SEARCH_BASE_URL,
 }) {
   const dispatch = useDispatch();
-  const mode = useSelector((state) => state.MapReducer.mode);
-  const generalizationEnabled = useSelector(
-    (state) => state.MapReducer.generalizationEnabled,
-  );
+  const mode = useSelector((state) => {
+    return state.MapReducer.mode;
+  });
+  const generalizationEnabled = useSelector((state) => {
+    return state.MapReducer.generalizationEnabled;
+  });
 
   const handleKeyboardEvent = useCallback(
     (evt) => {
@@ -111,20 +114,22 @@ function App({
 
   useEffect(() => {
     document.addEventListener('keydown', handleKeyboardEvent);
-    return () => document.removeEventListener('keydown', handleKeyboardEvent);
+    return () => {
+      return document.removeEventListener('keydown', handleKeyboardEvent);
+    };
   }, [handleKeyboardEvent]);
 
   return (
     <ThemeProvider theme={theme}>
       <Permalink
-        mots={mots}
         APIKey={apiKey}
+        mots={mots}
         stationSearchUrl={stationSearchUrl}
       />
       <MapComponent
+        APIKey={apiKey}
         mots={mots}
         routingUrl={routingUrl}
-        APIKey={apiKey}
         stationSearchUrl={stationSearchUrl}
       />
       <NotificationHandler />

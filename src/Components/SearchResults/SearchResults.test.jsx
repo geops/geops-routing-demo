@@ -1,10 +1,11 @@
+import { render } from '@testing-library/react';
+import { Map, View } from 'ol';
 import React from 'react';
-import { vi } from 'vitest';
+import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import { Provider } from 'react-redux';
-import { Map, View } from 'ol';
-import { render } from '@testing-library/react';
+import { vi } from 'vitest';
+
 import SearchResults from './SearchResults';
 
 describe('Search Results', () => {
@@ -15,9 +16,9 @@ describe('Search Results', () => {
       currentSearchResults: [
         {
           properties: {
-            name: 'Test Name',
             code: 'Test Code',
             country_code: 'Test Country Code',
+            name: 'Test Name',
           },
         },
       ],

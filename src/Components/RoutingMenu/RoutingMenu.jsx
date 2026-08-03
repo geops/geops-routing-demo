@@ -1,12 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { transformExtent } from 'ol/proj';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BugReport,
+  ExpandLess,
+  ExpandMore,
+  Info,
+  ZoomIn,
+} from '@mui/icons-material';
 import {
   Box,
   Button,
   Checkbox,
-  FormControlLabel,
   FormControl,
+  FormControlLabel,
   Grid,
   IconButton,
   LinearProgress,
@@ -14,65 +21,60 @@ import {
   Paper,
   Select,
   Slide,
-  Tabs,
   Tab,
+  Tabs,
   Tooltip,
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import {
-  ArrowLeft,
-  ArrowRight,
-  ZoomIn,
-  Info,
-  BugReport,
-  ExpandMore,
-  ExpandLess,
-} from '@mui/icons-material';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+import { transformExtent } from 'ol/proj';
 import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import {
-  setTracks,
-  setCurrentStops,
-  setCurrentStopsGeoJSON,
-  setCurrentMot,
-  showNotification,
-  setFloorInfo,
-  setIsFieldFocused,
-  setShowLoadingBar,
-  setSelectedRoutes,
-  setSearchMode,
-  setIsRouteInfoOpen,
-  setClickLocation,
-  setGeneralizationActive,
-  setYamlSnippetDialogOpen,
-} from '../../store/actions/Map';
-import './RoutingMenu.scss';
-import {
-  VALID_MOTS,
   DEFAULT_MOTS,
   OTHER_MOTS,
   SEARCH_MODES,
+  VALID_MOTS,
 } from '../../constants';
-import { to4326, to3857, findMotIcon } from '../../utils';
+import {
+  setClickLocation,
+  setCurrentMot,
+  setCurrentStops,
+  setCurrentStopsGeoJSON,
+  setFloorInfo,
+  setGeneralizationActive,
+  setIsFieldFocused,
+  setIsRouteInfoOpen,
+  setSearchMode,
+  setSelectedRoutes,
+  setShowLoadingBar,
+  setTracks,
+  setYamlSnippetDialogOpen,
+  showNotification,
+} from '../../store/actions/Map';
+import { findMotIcon, to3857, to4326 } from '../../utils';
 import RouteInfosDialog from '../RouteInfosDialog';
-import SearchResults from '../SearchResults';
 import SearchField from '../SearchField';
+import SearchResults from '../SearchResults';
+
+import './RoutingMenu.scss';
 
 const COORD_REGEX = /^\d+\.?\d*,\d+\.?\d*$/;
 
-const motHasGeneralization = (mot) =>
-  /^(rail|funicular|ferry|gondola|bus|tram|subway)$/.test(mot);
+const motHasGeneralization = (mot) => {
+  return /^(rail|funicular|ferry|gondola|bus|tram|subway)$/.test(mot);
+};
 
-function TabPanel({ children, value = null, index = null }) {
+function TabPanel({ children, index = null, value = null }) {
   return (
     <Typography
-      component="div"
-      role="tabpanel"
-      hidden={value !== index}
-      style={{ paddingTop: '10px', paddingBottom: '10px' }}
       aria-labelledby={`simple-tab-${index}`}
+      component="div"
+      hidden={value !== index}
+      role="tabpanel"
+      style={{ paddingBottom: '10px', paddingTop: '10px' }}
     >
       {value === index && children}
     </Typography>
@@ -80,19 +82,19 @@ function TabPanel({ children, value = null, index = null }) {
 }
 
 const dropDownSx = {
-  width: 120,
   backgroundColor: 'white',
+  width: 120,
 };
 const selectSx = {
-  height: '80%',
-  textAlign: 'center',
   '& .MuiSelect-select': {
-    paddingLeft: '0px !important',
     backgroundColor: 'white',
+    paddingLeft: '0px !important',
   },
   '& .MuiSelect-select:focus': {
     backgroundColor: 'white',
   },
+  height: '80%',
+  textAlign: 'center',
 };
 
 /**
@@ -121,18 +123,20 @@ const validateMots = (motsArray, validationMots) => {
       return validationMots.includes(mot);
     })
     .forEach((providedMot) => {
-      const requestedMot = validationMots.find((mot) => mot === providedMot);
+      const requestedMot = validationMots.find((mot) => {
+        return mot === providedMot;
+      });
       if (requestedMot) {
         currentMotsArray.push({
-          name: requestedMot,
           icon: findMotIcon(requestedMot),
+          name: requestedMot,
         });
       }
     });
   if (currentMotsArray.length === 0) {
     currentMotsArray.push({
-      name: VALID_MOTS[0],
       icon: findMotIcon(VALID_MOTS[0]),
+      name: VALID_MOTS[0],
     });
   }
   return currentMotsArray;
@@ -140,8 +144,12 @@ const validateMots = (motsArray, validationMots) => {
 
 // Currently no 'coach' mot available for stop finder.
 const handleStopFinderMot = (mot) => {
-  if (mot === 'coach') return 'bus';
-  if (mot === 'foot') return '';
+  if (mot === 'coach') {
+    return 'bus';
+  }
+  if (mot === 'foot') {
+    return '';
+  }
   return mot;
 };
 
@@ -150,16 +158,16 @@ const handleStopFinderMot = (mot) => {
  * @category RoutingMenu
  */
 function RoutingMenu({
-  mots,
-  stationSearchUrl,
   APIKey,
+  clearHighlightPoint,
   hoveredCoords = null,
   isActiveRoute,
-  onZoomRouteClick = undefined,
-  onPanViaClick = undefined,
+  mots,
   onDrawNewRoute,
   onHighlightPoint,
-  clearHighlightPoint,
+  onPanViaClick = undefined,
+  onZoomRouteClick = undefined,
+  stationSearchUrl,
 }) {
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const dispatch = useDispatch();
@@ -167,37 +175,57 @@ function RoutingMenu({
   const currentMotsVal = validateMots(mots, DEFAULT_MOTS);
   const otherMotsVal = validateMots(mots, OTHER_MOTS);
 
-  const floorInfo = useSelector((state) => state.MapReducer.floorInfo);
-  const center = useSelector((state) => state.MapReducer.center);
-  const tracks = useSelector((state) => state.MapReducer.tracks);
-  const clickLocation = useSelector((state) => state.MapReducer.clickLocation);
-  const activeFloor = useSelector((state) => state.MapReducer.activeFloor);
-  const currentStops = useSelector((state) => state.MapReducer.currentStops);
-  const selectedRoutes = useSelector(
-    (state) => state.MapReducer.selectedRoutes,
-  );
-  const showLoadingBar = useSelector(
-    (state) => state.MapReducer.showLoadingBar,
-  );
-  const maxExtent = useSelector((state) => state.MapReducer.maxExtent);
-  const isRouteInfoOpen = useSelector(
-    (state) => state.MapReducer.isRouteInfoOpen,
-  );
-  const currentStopsGeoJSON = useSelector(
-    (state) => state.MapReducer.currentStopsGeoJSON,
-  );
-  const currentMot = useSelector((state) => state.MapReducer.currentMot);
-  const searchMode = useSelector((state) => state.MapReducer.searchMode);
-  const generalizationEnabled = useSelector(
-    (state) => state.MapReducer.generalizationEnabled,
-  );
-  const generalizationActive = useSelector(
-    (state) => state.MapReducer.generalizationActive,
-  );
-  const mode = useSelector((state) => state.MapReducer.mode);
-  const yamlSnippetDialogOpen = useSelector(
-    (state) => state.MapReducer.yamlSnippetDialogOpen,
-  );
+  const floorInfo = useSelector((state) => {
+    return state.MapReducer.floorInfo;
+  });
+  const center = useSelector((state) => {
+    return state.MapReducer.center;
+  });
+  const tracks = useSelector((state) => {
+    return state.MapReducer.tracks;
+  });
+  const clickLocation = useSelector((state) => {
+    return state.MapReducer.clickLocation;
+  });
+  const activeFloor = useSelector((state) => {
+    return state.MapReducer.activeFloor;
+  });
+  const currentStops = useSelector((state) => {
+    return state.MapReducer.currentStops;
+  });
+  const selectedRoutes = useSelector((state) => {
+    return state.MapReducer.selectedRoutes;
+  });
+  const showLoadingBar = useSelector((state) => {
+    return state.MapReducer.showLoadingBar;
+  });
+  const maxExtent = useSelector((state) => {
+    return state.MapReducer.maxExtent;
+  });
+  const isRouteInfoOpen = useSelector((state) => {
+    return state.MapReducer.isRouteInfoOpen;
+  });
+  const currentStopsGeoJSON = useSelector((state) => {
+    return state.MapReducer.currentStopsGeoJSON;
+  });
+  const currentMot = useSelector((state) => {
+    return state.MapReducer.currentMot;
+  });
+  const searchMode = useSelector((state) => {
+    return state.MapReducer.searchMode;
+  });
+  const generalizationEnabled = useSelector((state) => {
+    return state.MapReducer.generalizationEnabled;
+  });
+  const generalizationActive = useSelector((state) => {
+    return state.MapReducer.generalizationActive;
+  });
+  const mode = useSelector((state) => {
+    return state.MapReducer.mode;
+  });
+  const yamlSnippetDialogOpen = useSelector((state) => {
+    return state.MapReducer.yamlSnippetDialogOpen;
+  });
 
   const [currentMots] = useState(currentMotsVal);
   const [otherMots] = useState(otherMotsVal);
@@ -210,7 +238,9 @@ function RoutingMenu({
   if (elRefs.current.length !== currentStops.length) {
     elRefs.current = Array(currentStops.length)
       .fill()
-      .map((el, i) => elRefs.current[i] || React.createRef());
+      .map((el, i) => {
+        return elRefs.current[i] || React.createRef();
+      });
   }
 
   useEffect(() => {
@@ -249,15 +279,15 @@ function RoutingMenu({
 
       // Create GeoJSON
       currentStopsGeoJSON[focusedFieldIndex] = {
-        type: 'Feature',
+        geometry: {
+          coordinates: clickLocation,
+          type: 'Point',
+        },
         properties: {
           id: clickLocation.toString(),
           type: 'coordinates',
         },
-        geometry: {
-          type: 'Point',
-          coordinates: clickLocation,
-        },
+        type: 'Feature',
       };
 
       // Move the focus to the next field
@@ -292,7 +322,9 @@ function RoutingMenu({
    * @category RoutingMenu
    */
   const handleMotChange = (event, newMot, tracksVal) => {
-    const newTracks = [...tracksVal].map(() => '');
+    const newTracks = [...tracksVal].map(() => {
+      return '';
+    });
     setCurrentOtherMot(null);
     dispatch(setTracks(newTracks));
     dispatch(setCurrentMot(newMot));
@@ -379,15 +411,15 @@ function RoutingMenu({
       const coords = to3857(stop.split(','));
       currentStops[fieldIndex] = coords;
       currentStopsGeoJSON[fieldIndex] = {
-        type: 'Feature',
+        geometry: {
+          coordinates: coords,
+          type: 'Point',
+        },
         properties: {
           id: coords.toString(),
           type: 'coordinates',
         },
-        geometry: {
-          type: 'Point',
-          coordinates: coords,
-        },
+        type: 'Feature',
       };
     } else {
       currentStops[fieldIndex] = event.target.value;
@@ -424,7 +456,9 @@ function RoutingMenu({
     ).toString()}`;
 
     fetch(reqUrl, { signal })
-      .then((response) => response.json())
+      .then((response) => {
+        return response.json();
+      })
       .then((response) => {
         if (response.error) {
           dispatch(showNotification("Couldn't find stations", 'warning'));
@@ -514,11 +548,13 @@ function RoutingMenu({
     }
   };
 
-  const getItemStyle = (isDragging, draggableStyle) => ({
-    userSelect: 'none',
-    background: isDragging ? '#ededed' : 'white',
-    ...draggableStyle,
-  });
+  const getItemStyle = (isDragging, draggableStyle) => {
+    return {
+      background: isDragging ? '#ededed' : 'white',
+      userSelect: 'none',
+      ...draggableStyle,
+    };
+  };
 
   const onDragEnd = (result) => {
     // dropped outside the list
@@ -561,89 +597,99 @@ function RoutingMenu({
         mountOnEnter
         unmountOnExit
       >
-        <Paper square elevation={3}>
+        <Paper elevation={3} square>
           <div style={{ height: 5 }}>
             {showLoadingBar ? <LinearProgress /> : null}
           </div>
           <Box
-            sx={(theme) => ({
-              display: 'flex',
-              width: 'calc(100% - 32px)',
-              gap: '10px',
-              [theme.breakpoints.only('xs')]: {
-                width: '100%',
-                flexWrap: 'wrap',
-              },
-            })}
-          >
-            <Tabs
-              value={DEFAULT_MOTS.includes(currentMot) ? currentMot : false}
-              sx={(theme) => ({
+            sx={(theme) => {
+              return {
+                display: 'flex',
+                gap: '10px',
                 [theme.breakpoints.only('xs')]: {
+                  flexWrap: 'wrap',
                   width: '100%',
                 },
-              })}
+                width: 'calc(100% - 32px)',
+              };
+            }}
+          >
+            <Tabs
+              aria-label="mots icons"
+              indicatorColor="primary"
               onChange={(e, mot) => {
                 handleMotChange(e, mot, tracks);
               }}
-              indicatorColor="primary"
+              sx={(theme) => {
+                return {
+                  [theme.breakpoints.only('xs')]: {
+                    width: '100%',
+                  },
+                };
+              }}
               textColor="primary"
-              aria-label="mots icons"
+              value={DEFAULT_MOTS.includes(currentMot) ? currentMot : false}
             >
               {currentMots.map((singleMot) => {
-                const { name, icon } = singleMot;
+                const { icon, name } = singleMot;
                 const capitalName =
                   name.charAt(0).toUpperCase() + name.slice(1);
                 return (
-                  <Tooltip title={capitalName} value={name} key={`mot-${name}`}>
+                  <Tooltip key={`mot-${name}`} title={capitalName} value={name}>
                     <Tab
-                      sx={(theme) => ({
-                        minWidth: 100,
-                        [theme.breakpoints.only('sm')]: {
-                          minWidth: 90,
-                        },
-                        [theme.breakpoints.only('xs')]: {
-                          minWidth: 100,
-                          width: '33%',
-                        },
-                      })}
-                      value={name}
-                      icon={icon}
                       aria-label={name}
                       disabled={showLoadingBar}
+                      icon={icon}
+                      sx={(theme) => {
+                        return {
+                          minWidth: 100,
+                          [theme.breakpoints.only('sm')]: {
+                            minWidth: 90,
+                          },
+                          [theme.breakpoints.only('xs')]: {
+                            minWidth: 100,
+                            width: '33%',
+                          },
+                        };
+                      }}
+                      value={name}
                     />
                   </Tooltip>
                 );
               })}
             </Tabs>
             <Box
-              sx={(theme) => ({
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                [theme.breakpoints.only('xs')]: {
-                  width: '100%',
-                  margin: '0 20px',
-                },
-              })}
+              sx={(theme) => {
+                return {
+                  alignItems: 'center',
+                  display: 'flex',
+                  gap: 2,
+                  [theme.breakpoints.only('xs')]: {
+                    margin: '0 20px',
+                    width: '100%',
+                  },
+                };
+              }}
             >
               {otherMots.length ? (
                 <FormControl sx={dropDownSx}>
                   <Select
-                    renderValue={(val) => (val !== '' ? val : 'Other MOTs')}
-                    sx={selectSx}
-                    variant="standard"
-                    labelId="rd-other-mot-label"
-                    value={currentOtherMot || ''}
-                    displayEmpty
-                    onChange={changeCurrentOtherMot}
                     disabled={showLoadingBar}
+                    displayEmpty
+                    labelId="rd-other-mot-label"
+                    onChange={changeCurrentOtherMot}
+                    renderValue={(val) => {
+                      return val !== '' ? val : 'Other MOTs';
+                    }}
+                    sx={selectSx}
+                    value={currentOtherMot || ''}
+                    variant="standard"
                   >
                     {otherMots.map((mot) => {
                       return (
                         <MenuItem
-                          value={mot.name}
                           key={`other-mot-${mot.name}`}
+                          value={mot.name}
                         >
                           {mot.name}
                         </MenuItem>
@@ -655,18 +701,20 @@ function RoutingMenu({
               {currentMot === 'foot' ? (
                 <FormControl sx={dropDownSx}>
                   <Select
-                    renderValue={(val) => val}
-                    sx={selectSx}
                     labelId="rd-other-mot-label"
-                    variant="standard"
+                    onChange={(evt) => {
+                      return dispatch(setSearchMode(evt.target.value));
+                    }}
+                    renderValue={(val) => {
+                      return val;
+                    }}
+                    sx={selectSx}
                     value={searchMode}
-                    onChange={(evt) =>
-                      dispatch(setSearchMode(evt.target.value))
-                    }
+                    variant="standard"
                   >
                     {SEARCH_MODES.map((option) => {
                       return (
-                        <MenuItem value={option} key={option}>
+                        <MenuItem key={option} value={option}>
                           {option}
                         </MenuItem>
                       );
@@ -677,12 +725,12 @@ function RoutingMenu({
               {mode === 'dev' && isDesktop ? (
                 <Tooltip title="Toggle YAML test snippet">
                   <IconButton
+                    color={yamlSnippetDialogOpen ? 'primary' : 'default'}
                     onClick={() => {
                       dispatch(
                         setYamlSnippetDialogOpen(!yamlSnippetDialogOpen),
                       );
                     }}
-                    color={yamlSnippetDialogOpen ? 'primary' : 'default'}
                   >
                     <BugReport />
                   </IconButton>
@@ -691,27 +739,27 @@ function RoutingMenu({
               {motHasGeneralization(currentMot) && generalizationEnabled ? (
                 <Tooltip title="Toggle generalization">
                   <FormControlLabel
-                    disabled={showLoadingBar}
-                    sx={{
-                      overflow: 'hidden',
-                      '& .MuiFormControlLabel-label': {
-                        textOverflow: 'ellipsis',
-                        overflow: 'hidden',
-                        whiteSpace: 'nowrap',
-                      },
-                    }}
-                    variant="standard"
                     control={
                       <Checkbox
                         checked={generalizationActive}
-                        onChange={() =>
-                          dispatch(
+                        onChange={() => {
+                          return dispatch(
                             setGeneralizationActive(!generalizationActive),
-                          )
-                        }
+                          );
+                        }}
                       />
                     }
+                    disabled={showLoadingBar}
                     label="Generalization"
+                    sx={{
+                      '& .MuiFormControlLabel-label': {
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      },
+                      overflow: 'hidden',
+                    }}
+                    variant="standard"
                   />
                 </Tooltip>
               ) : null}
@@ -720,62 +768,63 @@ function RoutingMenu({
           <TabPanel padding={10}>
             <DragDropContext onDragEnd={onDragEnd}>
               <Droppable droppableId="droppable">
-                {(provided) => (
-                  <div
-                    // eslint-disable-next-line react/jsx-props-no-spreading
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    style={{
-                      background: 'white',
-                    }}
-                  >
-                    {currentStops.map((item, index) => (
-                      <Draggable
-                        // eslint-disable-next-line react/no-array-index-key
-                        key={`searchField-${index}`}
-                        draggableId={`searchField-${index}`}
-                        index={index}
-                      >
-                        {(prov, snpsht) => (
-                          <div
-                            ref={prov.innerRef}
-                            // eslint-disable-next-line react/jsx-props-no-spreading
-                            {...prov.draggableProps}
-                            // eslint-disable-next-line react/jsx-props-no-spreading
-                            {...prov.dragHandleProps}
-                            style={getItemStyle(
-                              snpsht.isDragging,
-                              prov.draggableProps.style,
-                            )}
+                {(provided) => {
+                  return (
+                    <div
+                      {...provided.droppableProps}
+                      ref={provided.innerRef}
+                      style={{
+                        background: 'white',
+                      }}
+                    >
+                      {currentStops.map((item, index) => {
+                        return (
+                          <Draggable
+                            draggableId={`searchField-${index}`}
+                            index={index}
+                            key={`searchField-${index}`}
                           >
-                            <SearchField
-                              // eslint-disable-next-line react/no-array-index-key
-                              key={`searchField-${index}`}
-                              index={index}
-                              inputReference={elRefs.current[index]}
-                              addNewSearchFieldHandler={
-                                addNewSearchFieldHandler
-                              }
-                              currentStops={currentStops}
-                              currentMot={currentMot}
-                              removeSearchFieldHandler={
-                                removeSearchFieldHandler
-                              }
-                              searchStopsHandler={searchStopsHandler}
-                              singleStop={item}
-                              processHighlightedResultSelectHandler={
-                                processHighlightedResultSelectHandler
-                              }
-                              onFieldFocusHandler={onFieldFocusHandler}
-                              onPanViaClick={onPanViaClick}
-                            />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
+                            {(prov, snpsht) => {
+                              return (
+                                <div
+                                  ref={prov.innerRef}
+                                  {...prov.draggableProps}
+                                  {...prov.dragHandleProps}
+                                  style={getItemStyle(
+                                    snpsht.isDragging,
+                                    prov.draggableProps.style,
+                                  )}
+                                >
+                                  <SearchField
+                                    addNewSearchFieldHandler={
+                                      addNewSearchFieldHandler
+                                    }
+                                    currentMot={currentMot}
+                                    currentStops={currentStops}
+                                    index={index}
+                                    inputReference={elRefs.current[index]}
+                                    key={`searchField-${index}`}
+                                    onFieldFocusHandler={onFieldFocusHandler}
+                                    onPanViaClick={onPanViaClick}
+                                    processHighlightedResultSelectHandler={
+                                      processHighlightedResultSelectHandler
+                                    }
+                                    removeSearchFieldHandler={
+                                      removeSearchFieldHandler
+                                    }
+                                    searchStopsHandler={searchStopsHandler}
+                                    singleStop={item}
+                                  />
+                                </div>
+                              );
+                            }}
+                          </Draggable>
+                        );
+                      })}
+                      {provided.placeholder}
+                    </div>
+                  );
+                }}
               </Droppable>
             </DragDropContext>
             <SearchResults
@@ -787,8 +836,10 @@ function RoutingMenu({
                 <Tooltip title="Zoom to the route">
                   <span>
                     <Button
-                      onClick={() => onZoomRouteClick()}
                       disabled={!isActiveRoute}
+                      onClick={() => {
+                        return onZoomRouteClick();
+                      }}
                       startIcon={<ZoomIn fontSize="small" />}
                     >
                       Zoom to the route
@@ -800,14 +851,14 @@ function RoutingMenu({
                 <Tooltip title="Route information">
                   <span>
                     <Button
-                      onClick={() =>
-                        isRouteInfoOpen
+                      disabled={!isActiveRoute}
+                      onClick={() => {
+                        return isRouteInfoOpen
                           ? dispatch(setIsRouteInfoOpen(false))
                           : onDrawNewRoute(true).then(() => {
                               dispatch(setIsRouteInfoOpen(true));
-                            })
-                      }
-                      disabled={!isActiveRoute}
+                            });
+                      }}
                       selected={isRouteInfoOpen}
                       startIcon={<Info fontSize="small" />}
                       variant={isRouteInfoOpen ? 'contained' : 'text'}
@@ -820,18 +871,22 @@ function RoutingMenu({
             </Grid>
             {isRouteInfoOpen && selectedRoutes.length ? (
               <RouteInfosDialog
-                closeInfo={() => dispatch(setIsRouteInfoOpen(false))}
+                clearHighlightPoint={clearHighlightPoint}
+                closeInfo={() => {
+                  return dispatch(setIsRouteInfoOpen(false));
+                }}
                 hoveredCoords={hoveredCoords}
                 onHighlightPoint={onHighlightPoint}
-                clearHighlightPoint={clearHighlightPoint}
                 routes={selectedRoutes}
               />
             ) : null}
           </TabPanel>
           <button
             className="rd-routing-menu-toggle-close"
+            onClick={() => {
+              return setMenuVisible(false);
+            }}
             type="button"
-            onClick={() => setMenuVisible(false)}
           >
             {isDesktop ? <ArrowLeft /> : <ExpandLess />}
           </button>
@@ -840,8 +895,10 @@ function RoutingMenu({
       {!menuVisible && (
         <button
           className="rd-routing-menu-toggle-open"
+          onClick={() => {
+            return setMenuVisible(true);
+          }}
           type="button"
-          onClick={() => setMenuVisible(true)}
         >
           {isDesktop ? <ArrowRight /> : <ExpandMore />}
         </button>
@@ -852,21 +909,21 @@ function RoutingMenu({
 
 TabPanel.propTypes = {
   children: PropTypes.node.isRequired,
-  value: PropTypes.string,
   index: PropTypes.number,
+  value: PropTypes.string,
 };
 
 RoutingMenu.propTypes = {
-  mots: PropTypes.arrayOf(PropTypes.string).isRequired,
   APIKey: PropTypes.string.isRequired,
-  stationSearchUrl: PropTypes.string.isRequired,
+  clearHighlightPoint: PropTypes.func.isRequired,
   hoveredCoords: PropTypes.arrayOf(PropTypes.number),
   isActiveRoute: PropTypes.bool.isRequired,
-  onZoomRouteClick: PropTypes.func,
-  onPanViaClick: PropTypes.func,
+  mots: PropTypes.arrayOf(PropTypes.string).isRequired,
   onDrawNewRoute: PropTypes.func.isRequired,
   onHighlightPoint: PropTypes.func.isRequired,
-  clearHighlightPoint: PropTypes.func.isRequired,
+  onPanViaClick: PropTypes.func,
+  onZoomRouteClick: PropTypes.func,
+  stationSearchUrl: PropTypes.string.isRequired,
 };
 
 export default RoutingMenu;

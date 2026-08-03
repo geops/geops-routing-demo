@@ -1,23 +1,29 @@
+import { render } from '@testing-library/react';
+import mediaQuery from 'css-mediaquery';
+import { Map } from 'ol';
 import React from 'react';
+import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
-import { Provider } from 'react-redux';
-import { render } from '@testing-library/react';
-import { Map } from 'ol';
-import mediaQuery from 'css-mediaquery';
-import YamlSnippetDialog from './YamlSnippetDialog';
+
+import { debugLayer, routeVectorLayer } from '../../store/reducers/Map';
+
 import fixture from './fixture';
-import { routeVectorLayer, debugLayer } from '../../store/reducers/Map';
+import YamlSnippetDialog from './YamlSnippetDialog';
 
 function createMatchMedia(width) {
-  return (query) => ({
-    matches: mediaQuery.match(query, { width }),
-    media: query,
-    onchange: null,
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => false,
-  });
+  return (query) => {
+    return {
+      addEventListener: () => {},
+      dispatchEvent: () => {
+        return false;
+      },
+      matches: mediaQuery.match(query, { width }),
+      media: query,
+      onchange: null,
+      removeEventListener: () => {},
+    };
+  };
 }
 
 describe('YamlSnippetDialog', () => {
@@ -32,18 +38,18 @@ describe('YamlSnippetDialog', () => {
       MapReducer: {
         center: [0, 0],
         currentMot: 'rail',
-        resolveHops: false,
         currentStops: ['', ''],
-        selectedRoutes: fixture.routes,
         currentStopsGeoJSON: fixture.geoJson,
+        debugLayer,
+        floorInfo: [null, null],
+        generalizationGraph: 'gen5',
         olMap: new Map({
           controls: [],
         }),
-        floorInfo: [null, null],
-        tracks: [null, null],
-        generalizationGraph: 'gen5',
+        resolveHops: false,
         routingLayer: routeVectorLayer,
-        debugLayer,
+        selectedRoutes: fixture.routes,
+        tracks: [null, null],
       },
     });
   });

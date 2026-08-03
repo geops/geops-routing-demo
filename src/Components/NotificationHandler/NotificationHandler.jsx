@@ -1,8 +1,9 @@
-import React from 'react';
-import Snackbar from '@mui/material/Snackbar';
-import { connect } from 'react-redux';
 import { Alert } from '@mui/material';
+import Snackbar from '@mui/material/Snackbar';
 import PropTypes from 'prop-types';
+import React from 'react';
+import { connect } from 'react-redux';
+
 import { showNotification } from '../../store/actions';
 
 /**
@@ -46,16 +47,6 @@ class NotificationHandler extends React.Component {
   }
 
   /**
-   * Show the notification to the view.
-   * @category NotificationHandler
-   */
-  handleOpen = () => {
-    this.setState({
-      open: true,
-    });
-  };
-
-  /**
    * Hide the notification from the view.
    * @category NotificationHandler
    */
@@ -68,6 +59,16 @@ class NotificationHandler extends React.Component {
   };
 
   /**
+   * Show the notification to the view.
+   * @category NotificationHandler
+   */
+  handleOpen = () => {
+    this.setState({
+      open: true,
+    });
+  };
+
+  /**
    * Render the notification to the dom.
    * @category NotificationHandler
    */
@@ -77,17 +78,17 @@ class NotificationHandler extends React.Component {
     return (
       <Snackbar
         anchorOrigin={{
-          vertical: 'bottom',
           horizontal: 'left',
+          vertical: 'bottom',
         }}
-        open={open}
         autoHideDuration={6000}
         onClose={this.handleClose}
+        open={open}
       >
         <Alert
+          elevation={6}
           onClose={this.handleClose}
           severity={notificationType}
-          elevation={6}
           variant="filled"
         >
           {notificationMessage}
@@ -99,8 +100,9 @@ class NotificationHandler extends React.Component {
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    onShowNotification: (notificationMessage, notificationType) =>
-      dispatch(showNotification(notificationMessage, notificationType)),
+    onShowNotification: (notificationMessage, notificationType) => {
+      return dispatch(showNotification(notificationMessage, notificationType));
+    },
   };
 };
 
@@ -112,9 +114,9 @@ const mapStateToProps = (state) => {
 };
 
 NotificationHandler.propTypes = {
-  onShowNotification: PropTypes.func.isRequired,
   notificationMessage: PropTypes.string,
   notificationType: PropTypes.string.isRequired,
+  onShowNotification: PropTypes.func.isRequired,
 };
 NotificationHandler.defaultProps = {
   notificationMessage: null,

@@ -1,26 +1,27 @@
 /* eslint-disable no-restricted-globals */
-import React, { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import RSPermalink from 'react-spatial/components/Permalink';
-import { to4326, to3857 } from '../../utils';
+
+import { BARRIERFREE_SEARCH_MODE } from '../../constants';
 import {
+  setCenter,
+  setCurrentMot,
   setCurrentStops,
   setCurrentStopsGeoJSON,
-  setCurrentMot,
-  setCenter,
   setFloorInfo,
-  setResolveHops,
+  setGeneralizationActive,
   setGeneralizationEnabled,
   setGeneralizationGraph,
-  setGeneralizationActive,
-  setTracks,
   setMode,
-  setStyle,
+  setResolveHops,
   setSearchMode,
+  setStyle,
+  setTracks,
   setZoom,
 } from '../../store/actions/Map';
-import { BARRIERFREE_SEARCH_MODE } from '../../constants';
+import { to3857, to4326 } from '../../utils';
 
 const abortController = new AbortController();
 const { signal } = abortController;
@@ -44,21 +45,25 @@ const getGeoJson = (viaString, APIKey, stationSearchUrl) => {
     let geoJson;
     const coordArray = viaString
       .split(',')
-      .filter((val) => !isNaN(val))
-      .map((string) => parseFloat(string));
+      .filter((val) => {
+        return !isNaN(val);
+      })
+      .map((string) => {
+        return parseFloat(string);
+      });
     if (coordArray.length === 2 && validateUrlCoordinates(coordArray)) {
       /* Convert coordinates to 3857 */
       const coords3857 = to3857(coordArray);
       geoJson = {
-        type: 'Feature',
+        geometry: {
+          coordinates: coords3857,
+          type: 'Point',
+        },
         properties: {
           id: coords3857.toString(),
           type: 'coordinates',
         },
-        geometry: {
-          type: 'Point',
-          coordinates: coords3857,
-        },
+        type: 'Feature',
       };
     }
     return Promise.resolve(geoJson);
@@ -80,7 +85,9 @@ const getGeoJson = (viaString, APIKey, stationSearchUrl) => {
   }
 
   return fetch(reqUrl, { signal })
-    .then((response) => response.json())
+    .then((response) => {
+      return response.json();
+    })
     .then((response) => {
       /* Convert coordinates to 3857 */
       const feature = response.features[0];
@@ -100,7 +107,9 @@ const compileViaString = (currentStopsGeoJson, tracks) => {
   }
 
   const uidStrings = currentStopsGeoJson
-    .filter((val) => !!val)
+    .filter((val) => {
+      return !!val;
+    })
     .map((val, idx) => {
       if (!val.properties.uid) {
         return `${to4326(val.geometry.coordinates)}`;
@@ -110,27 +119,45 @@ const compileViaString = (currentStopsGeoJson, tracks) => {
   return uidStrings.join('|');
 };
 
-function Permalink({ mots, APIKey, stationSearchUrl }) {
+function Permalink({ APIKey, mots, stationSearchUrl }) {
   const dispatch = useDispatch();
   const urlSearch = new URLSearchParams(window.location.search);
-  const center = useSelector((state) => state.MapReducer.center);
-  const searchMode = useSelector((state) => state.MapReducer.searchMode);
-  const tracks = useSelector((state) => state.MapReducer.tracks);
-  const appState = useSelector((state) => state.MapReducer);
-  const currentMot = useSelector((state) => state.MapReducer.currentMot);
-  const floorInfo = useSelector((state) => state.MapReducer.floorInfo);
-  const currentStops = useSelector((state) => state.MapReducer.currentStops);
-  const mode = useSelector((state) => state.MapReducer.mode);
-  const currentStopsGeoJSON = useSelector(
-    (state) => state.MapReducer.currentStopsGeoJSON,
-  );
-  const resolveHops = useSelector((state) => state.MapReducer.resolveHops);
-  const generalizationEnabled = useSelector(
-    (state) => state.MapReducer.generalizationEnabled,
-  );
-  const generalizationActive = useSelector(
-    (state) => state.MapReducer.generalizationActive,
-  );
+  const center = useSelector((state) => {
+    return state.MapReducer.center;
+  });
+  const searchMode = useSelector((state) => {
+    return state.MapReducer.searchMode;
+  });
+  const tracks = useSelector((state) => {
+    return state.MapReducer.tracks;
+  });
+  const appState = useSelector((state) => {
+    return state.MapReducer;
+  });
+  const currentMot = useSelector((state) => {
+    return state.MapReducer.currentMot;
+  });
+  const floorInfo = useSelector((state) => {
+    return state.MapReducer.floorInfo;
+  });
+  const currentStops = useSelector((state) => {
+    return state.MapReducer.currentStops;
+  });
+  const mode = useSelector((state) => {
+    return state.MapReducer.mode;
+  });
+  const currentStopsGeoJSON = useSelector((state) => {
+    return state.MapReducer.currentStopsGeoJSON;
+  });
+  const resolveHops = useSelector((state) => {
+    return state.MapReducer.resolveHops;
+  });
+  const generalizationEnabled = useSelector((state) => {
+    return state.MapReducer.generalizationEnabled;
+  });
+  const generalizationActive = useSelector((state) => {
+    return state.MapReducer.generalizationActive;
+  });
   const map = appState.olMap;
   const [params, setParams] = useState({});
 
@@ -174,7 +201,10 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
 
       if (motParam) {
         // Set current mot if defined
-        const newMot = mots.find((mot) => mot === motParam) || mots[0];
+        const newMot =
+          mots.find((mot) => {
+            return mot === motParam;
+          }) || mots[0];
         newParams.mot = newMot;
         dispatch(setCurrentMot(newMot));
       }
@@ -187,9 +217,9 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
         // Set via stations if defined
         newParams.via = viaParam;
         const viaArray = viaParam.split('|');
-        const geoJsonArray = viaArray.map((viaString) =>
-          getGeoJson(viaString.split('$')[0], APIKey, stationSearchUrl),
-        );
+        const geoJsonArray = viaArray.map((viaString) => {
+          return getGeoJson(viaString.split('$')[0], APIKey, stationSearchUrl);
+        });
         dispatch(
           setTracks(
             viaArray.map((stop) => {
@@ -213,7 +243,11 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
               }),
             ),
           );
-          const newCurrentStopsGeoJSON = [...values.filter((stop) => !!stop)];
+          const newCurrentStopsGeoJSON = [
+            ...values.filter((stop) => {
+              return !!stop;
+            }),
+          ];
           dispatch(setCurrentStopsGeoJSON(newCurrentStopsGeoJSON));
         });
       }
@@ -309,8 +343,8 @@ function Permalink({ mots, APIKey, stationSearchUrl }) {
 }
 
 Permalink.propTypes = {
-  mots: PropTypes.arrayOf(PropTypes.string).isRequired,
   APIKey: PropTypes.string.isRequired,
+  mots: PropTypes.arrayOf(PropTypes.string).isRequired,
   stationSearchUrl: PropTypes.string.isRequired,
 };
 

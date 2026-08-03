@@ -1,5 +1,4 @@
-/* eslint-disable no-undef */
-import { VALID_MOTS, OTHER_MOTS } from './constants';
+import { OTHER_MOTS, VALID_MOTS } from './constants';
 
 describe('constants', () => {
   it("VALID_MOTS should include 'bus'", () => {

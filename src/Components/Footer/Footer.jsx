@@ -1,21 +1,21 @@
-import React from 'react';
 import { Typography } from '@mui/material';
+import React from 'react';
 
 export default function Footer() {
   return (
     <div
       style={{
-        background: 'white',
-        position: 'absolute',
-        bottom: 0,
-        display: 'flex',
-        justifyContent: 'space-between',
-        height: '24px',
         alignItems: 'center',
-        width: '100%',
-        boxSizing: 'border-box',
+        background: 'white',
+        bottom: 0,
         boxShadow: '0 0 5px #555',
+        boxSizing: 'border-box',
+        display: 'flex',
+        height: '24px',
+        justifyContent: 'space-between',
         padding: '0 5px',
+        position: 'absolute',
+        width: '100%',
       }}
     >
       <div>

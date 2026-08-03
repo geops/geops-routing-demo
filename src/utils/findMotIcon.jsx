@@ -1,7 +1,7 @@
-import React from 'react';
 import DirectionsBusIcon from '@mui/icons-material/DirectionsBus';
 import DirectionsRailwayIcon from '@mui/icons-material/DirectionsRailway';
 import DirectionsWalkIcon from '@mui/icons-material/DirectionsWalk';
+import React from 'react';
 
 /**
  * Map each mot to an icon
@@ -12,11 +12,11 @@ import DirectionsWalkIcon from '@mui/icons-material/DirectionsWalk';
 const findMotIcon = (name) => {
   let result = null;
   switch (name) {
-    case 'rail':
-      result = <DirectionsRailwayIcon />;
-      break;
     case 'foot':
       result = <DirectionsWalkIcon />;
+      break;
+    case 'rail':
+      result = <DirectionsRailwayIcon />;
       break;
     default:
       result = <DirectionsBusIcon />;

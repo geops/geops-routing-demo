@@ -1,24 +1,28 @@
-/* eslint-disable class-methods-use-this */
-/* eslint-disable max-classes-per-file */
-import { vi } from 'vitest';
 import crypto from 'crypto';
-import configureStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
 
 // Assign CanvasPattern to global
 import { CanvasPattern } from 'canvas';
+import configureStore from 'redux-mock-store';
+import thunk from 'redux-thunk';
+import { vi } from 'vitest';
 
 // -------------------
 // Mock 'canvas' module
 // -------------------
 vi.mock('canvas', async () => {
-  const original = await vi.importActual('canvas').catch(() => ({}));
+  const original = await vi.importActual('canvas').catch(() => {
+    return {};
+  });
   return {
     ...original,
-    createCanvas: () => ({}),
-    loadImage: async () => ({}),
-    CanvasRenderingContext2D: class {},
     CanvasPattern: class {},
+    CanvasRenderingContext2D: class {},
+    createCanvas: () => {
+      return {};
+    },
+    loadImage: async () => {
+      return {};
+    },
   };
 });
 global.CanvasPattern = CanvasPattern;
@@ -26,7 +30,9 @@ global.CanvasPattern = CanvasPattern;
 // -------------------
 // Mock URL.createObjectURL
 // -------------------
-global.URL.createObjectURL = vi.fn(() => 'fooblob');
+global.URL.createObjectURL = vi.fn(() => {
+  return 'fooblob';
+});
 
 // -------------------
 // Redux mock store
@@ -41,7 +47,9 @@ if (typeof global.crypto === 'undefined') {
 }
 
 Object.defineProperty(global.crypto, 'getRandomValues', {
-  value: (arr) => crypto.randomBytes(arr.length),
+  value: (arr) => {
+    return crypto.randomBytes(arr.length);
+  },
   writable: false,
 });
 
@@ -49,9 +57,9 @@ Object.defineProperty(global.crypto, 'getRandomValues', {
 // ResizeObserver mock
 // -------------------
 global.ResizeObserver = class {
+  disconnect() {}
+
   observe() {}
 
   unobserve() {}
-
-  disconnect() {}
 };

@@ -9,163 +9,163 @@ export const setZoom = (zoom) => {
 
 export const setCenter = (center) => {
   return {
-    type: actionTypes.SET_CENTER,
     center,
+    type: actionTypes.SET_CENTER,
   };
 };
 
 export const setActiveFloor = (activeFloor) => {
   return {
-    type: actionTypes.SET_ACTIVE_FLOOR,
     activeFloor,
+    type: actionTypes.SET_ACTIVE_FLOOR,
   };
 };
 
 export const setFloorInfo = (floorInfo) => {
   return {
-    type: actionTypes.SET_FLOOR_INFO,
     floorInfo,
+    type: actionTypes.SET_FLOOR_INFO,
   };
 };
 
 export const setCurrentStops = (currentStops) => {
   return {
-    type: actionTypes.SET_CURRENT_STOPS,
     currentStops,
+    type: actionTypes.SET_CURRENT_STOPS,
   };
 };
 
 export const setCurrentStopsGeoJSON = (currentStopsGeoJSON) => {
   return {
-    type: actionTypes.SET_CURRENT_STOPS_GEOJSON,
     currentStopsGeoJSON,
+    type: actionTypes.SET_CURRENT_STOPS_GEOJSON,
   };
 };
 
 export const setCurrentMot = (currentMot) => {
   return {
-    type: actionTypes.SET_CURRENT_MOT,
     currentMot,
+    type: actionTypes.SET_CURRENT_MOT,
   };
 };
 
 export const setClickLocation = (clickLocation) => {
   return {
-    type: actionTypes.SET_CLICK_LOCATION,
     clickLocation,
+    type: actionTypes.SET_CLICK_LOCATION,
   };
 };
 
 export const showNotification = (notificationMessage, notificationType) => {
   return {
-    type: actionTypes.SHOW_NOTIFICATION,
     notificationMessage,
     notificationType,
+    type: actionTypes.SHOW_NOTIFICATION,
   };
 };
 
 export const setIsFieldFocused = (isFieldFocused) => {
   return {
-    type: actionTypes.SET_IS_FIELD_FOCUSED,
     isFieldFocused,
+    type: actionTypes.SET_IS_FIELD_FOCUSED,
   };
 };
 
 export const setShowLoadingBar = (showLoadingBar) => {
   return {
-    type: actionTypes.SET_SHOW_LOADING_BAR,
     showLoadingBar,
+    type: actionTypes.SET_SHOW_LOADING_BAR,
   };
 };
 
 export const setSelectedRoutes = (selectedRoutes) => {
   return {
-    type: actionTypes.SET_SELECTED_ROUTES,
     selectedRoutes,
+    type: actionTypes.SET_SELECTED_ROUTES,
   };
 };
 
 export const setIsRouteInfoOpen = (isRouteInfoOpen) => {
   return {
-    type: actionTypes.SET_IS_ROUTE_INFO_OPEN,
     isRouteInfoOpen,
+    type: actionTypes.SET_IS_ROUTE_INFO_OPEN,
   };
 };
 
 export const setDialogPosition = (dialogPosition) => {
   return {
-    type: actionTypes.SET_DIALOG_POSITION,
     dialogPosition,
+    type: actionTypes.SET_DIALOG_POSITION,
   };
 };
 
 export const setDialogSize = (dialogSize) => {
   return {
-    type: actionTypes.SET_DIALOG_SIZE,
     dialogSize,
+    type: actionTypes.SET_DIALOG_SIZE,
   };
 };
 
 export const setResolveHops = (resolveHops) => {
   return {
-    type: actionTypes.SET_RESOLVE_HOPS,
     resolveHops,
+    type: actionTypes.SET_RESOLVE_HOPS,
   };
 };
 
 export const setTracks = (tracks) => {
   return {
-    type: actionTypes.SET_TRACKS,
     tracks,
+    type: actionTypes.SET_TRACKS,
   };
 };
 
 export const setSearchMode = (searchMode) => {
   return {
-    type: actionTypes.SET_SEARCH_MODE,
     searchMode,
+    type: actionTypes.SET_SEARCH_MODE,
   };
 };
 
 export const setMaxExtent = (maxExtent) => {
   return {
-    type: actionTypes.SET_MAX_EXTENT,
     maxExtent,
+    type: actionTypes.SET_MAX_EXTENT,
   };
 };
 
 export const setGeneralizationEnabled = (generalizationEnabled) => {
   return {
-    type: actionTypes.SET_GENERALIZATION_ENABLED,
     generalizationEnabled,
+    type: actionTypes.SET_GENERALIZATION_ENABLED,
   };
 };
 
 export const setGeneralizationGraph = (generalizationGraph) => {
   return {
-    type: actionTypes.SET_GENERALIZATION_GRAPH,
     generalizationGraph,
+    type: actionTypes.SET_GENERALIZATION_GRAPH,
   };
 };
 
 export const setStyle = (style) => {
   return {
-    type: actionTypes.SET_STYLE,
     style,
+    type: actionTypes.SET_STYLE,
   };
 };
 
 export const setGeneralizationActive = (generalizationActive) => {
   return {
-    type: actionTypes.SET_GENERALIZATION_ACTIVE,
     generalizationActive,
+    type: actionTypes.SET_GENERALIZATION_ACTIVE,
   };
 };
 
 export const setMode = (mode) => {
   return {
-    type: actionTypes.SET_MODE,
     mode,
+    type: actionTypes.SET_MODE,
   };
 };
 

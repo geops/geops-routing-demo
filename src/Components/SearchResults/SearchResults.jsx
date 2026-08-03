@@ -1,11 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import Paper from '@mui/material/Paper';
+import MapMarkerIcon from '@mui/icons-material/LocationOn';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import MapMarkerIcon from '@mui/icons-material/LocationOn';
+import ListItemText from '@mui/material/ListItemText';
+import Paper from '@mui/material/Paper';
+import PropTypes from 'prop-types';
+import React from 'react';
 
 import './SearchResults.scss';
 
@@ -26,7 +26,11 @@ const renderSecondary = (id, code, countryCode, ifopt) => {
   if (ifopt) {
     display.push(`ifopt: ${ifopt}`);
   }
-  return display.filter((l) => l !== '').join(', ');
+  return display
+    .filter((l) => {
+      return l !== '';
+    })
+    .join(', ');
 };
 
 /**
@@ -41,11 +45,11 @@ function SearchResults({
     return null;
   }
   return (
-    <Paper square elevation={3}>
+    <Paper elevation={3} square>
       <List
-        component="nav"
-        className="rd-result-list"
         aria-label="search results"
+        className="rd-result-list"
+        component="nav"
         style={{
           overflowY: 'scroll',
           paddingBottom: 0,
@@ -56,11 +60,11 @@ function SearchResults({
           if (index !== 0) {
             return (
               <ListItem
+                button
+                key={searchResult.properties.id}
                 onClick={() => {
                   processClickedResultHandler(searchResult);
                 }}
-                button
-                key={searchResult.properties.id}
               >
                 <ListItemIcon>
                   <MapMarkerIcon />
@@ -80,10 +84,12 @@ function SearchResults({
           // First item
           return (
             <ListItem
-              onClick={() => processClickedResultHandler(searchResult)}
               button
-              selected
               key={`searchResult-${searchResult.properties.name}`}
+              onClick={() => {
+                return processClickedResultHandler(searchResult);
+              }}
+              selected
             >
               <ListItemIcon>
                 <MapMarkerIcon />
